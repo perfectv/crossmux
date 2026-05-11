@@ -18,6 +18,7 @@
 #include "reader/ReaderActivity.h"
 #include "settings/OpdsServerListActivity.h"
 #include "settings/SettingsActivity.h"
+#include "games/chinese-chess/ChineseChessMenuActivity.h"
 #include "games/gomoku/GomokuMenuActivity.h"
 #include "games/sudoku/SudokuMenuActivity.h"
 #include "util/FullScreenMessageActivity.h"
@@ -219,6 +220,10 @@ void ActivityManager::goToGames() { replaceActivity(std::make_unique<GamesMenuAc
 void ActivityManager::goToSudoku() { replaceActivity(std::make_unique<SudokuMenuActivity>(renderer, mappedInput)); }
 
 void ActivityManager::goToGomoku() { replaceActivity(std::make_unique<GomokuMenuActivity>(renderer, mappedInput)); }
+
+void ActivityManager::goToChineseChess() {
+  replaceActivity(std::make_unique<ChineseChessMenuActivity>(renderer, mappedInput));
+}
 
 void ActivityManager::goHome() { replaceActivity(std::make_unique<HomeActivity>(renderer, mappedInput)); }
 

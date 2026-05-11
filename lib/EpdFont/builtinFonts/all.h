@@ -1,5 +1,6 @@
 #pragma once
 
+#include <builtinFonts/chinese_chess_18.h>
 #include <builtinFonts/notoserif_12_bold.h>
 #include <builtinFonts/notoserif_12_bolditalic.h>
 #include <builtinFonts/notoserif_12_italic.h>

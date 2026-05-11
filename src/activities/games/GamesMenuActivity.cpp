@@ -17,9 +17,10 @@ void GamesMenuActivity::onExit() { Activity::onExit(); }
 
 void GamesMenuActivity::buildItems() {
   items.clear();
-  items.reserve(2);
+  items.reserve(3);
   items.push_back(GameKind::Sudoku);
   items.push_back(GameKind::Gomoku);
+  items.push_back(GameKind::ChineseChess);
 }
 
 void GamesMenuActivity::loop() {
@@ -49,6 +50,9 @@ void GamesMenuActivity::onSelect() {
     case GameKind::Gomoku:
       activityManager.goToGomoku();
       return;
+    case GameKind::ChineseChess:
+      activityManager.goToChineseChess();
+      return;
   }
 }
 
@@ -71,6 +75,8 @@ void GamesMenuActivity::render(RenderLock&&) {
         return std::string(tr(STR_SUDOKU_TITLE));
       case GameKind::Gomoku:
         return std::string(tr(STR_GOMOKU_TITLE));
+      case GameKind::ChineseChess:
+        return std::string(tr(STR_CHINESE_CHESS_TITLE));
     }
     return "";
   };
@@ -82,6 +88,8 @@ void GamesMenuActivity::render(RenderLock&&) {
         return std::string(tr(STR_SUDOKU_SUBTITLE));
       case GameKind::Gomoku:
         return std::string(tr(STR_GOMOKU_SUBTITLE));
+      case GameKind::ChineseChess:
+        return std::string(tr(STR_CHINESE_CHESS_SUBTITLE));
     }
     return "";
   };
@@ -93,6 +101,8 @@ void GamesMenuActivity::render(RenderLock&&) {
         return UIIcon::Sudoku;
       case GameKind::Gomoku:
         return UIIcon::Gomoku;
+      case GameKind::ChineseChess:
+        return UIIcon::ChineseChess;
     }
     return UIIcon::Sudoku;
   };

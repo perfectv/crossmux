@@ -86,7 +86,8 @@ enum UIIcon {
   Hotspot,
   Games,
   Sudoku,
-  Gomoku
+  Gomoku,
+  ChineseChess
 };
 
 enum class KeyboardKeyType { Normal, Shift, Mode, Space, Del, Ok, Disabled };
