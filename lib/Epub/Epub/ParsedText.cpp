@@ -353,7 +353,34 @@ std::vector<uint16_t> ParsedText::calculateWordWidths(const GfxRenderer& rendere
 #endif
 
   for (size_t i = 0; i < words.size(); ++i) {
-    uint16_t w = measureWordWidth(renderer, fontId, words[i], wordStyles[i]);
+    uint16_t w = 0;
+    bool usedCjkCache = false;
+#ifdef ENABLE_CHINESE_VERSION
+    // Fast path: a single CJK ideograph word (3-byte UTF-8 starting with 0xE0–0xEF)
+    // reuses the cached advance of "我". Per-character parser tokenization makes this
+    // path dominant for Chinese paragraphs, so the cache turns ~600 getTextAdvanceX
+    // calls per page into ≤4 (one per style actually used).
+    {
+      const std::string& wd = words[i];
+      if (wd.size() == 3 && (static_cast<uint8_t>(wd[0]) & 0xF0) == 0xE0) {
+        const auto* p = reinterpret_cast<const unsigned char*>(wd.data());
+        const uint32_t cp = utf8NextCodepoint(&p);
+        if ((cp >= 0x4E00 && cp <= 0x9FFF) || (cp >= 0x3400 && cp <= 0x4DBF)) {
+          const auto styleIdx = static_cast<uint8_t>(wordStyles[i]) & 0x03;
+          if (cjkAdvanceByStyle[styleIdx] == 0) {
+            cjkAdvanceByStyle[styleIdx] = renderer.getTextAdvanceX(fontId, "\xE6\x88\x91", wordStyles[i]);
+          }
+          if (cjkAdvanceByStyle[styleIdx] > 0) {
+            w = cjkAdvanceByStyle[styleIdx];
+            usedCjkCache = true;
+          }
+        }
+      }
+    }
+#endif
+    if (!usedCjkCache) {
+      w = measureWordWidth(renderer, fontId, words[i], wordStyles[i]);
+    }
 #ifdef ENABLE_CHINESE_VERSION
     if (isCJKFullWidthPunctuation(words[i])) {
       const auto styleIdx = static_cast<uint8_t>(wordStyles[i]) & 0x03;
@@ -513,8 +540,16 @@ void ParsedText::applyParagraphIndent() {
     // CSS text-indent is explicitly set (even if 0) - don't use fallback EmSpace
     // The actual indent positioning is handled in extractLine()
   } else if (blockStyle.alignment == CssTextAlign::Justify || blockStyle.alignment == CssTextAlign::Left) {
-    // No CSS text-indent defined - use EmSpace fallback for visual indent
+    // No CSS text-indent defined - use a wide-space fallback for visual indent.
+#ifdef ENABLE_CHINESE_VERSION
+    // U+3000 IDEOGRAPHIC SPACE: CJK 排版标准全角空格，与汉字等宽；CJK 字体
+    // 子集 (0x3000-0x303F) 已含此 glyph。U+2003 EM SPACE 不在子集里，会触发
+    // "No glyph for codepoint 8195" 错误。
+    words.front().insert(0, "\xe3\x80\x80");
+#else
+    // U+2003 EM SPACE: 拉丁字体内置 glyph。
     words.front().insert(0, "\xe2\x80\x83");
+#endif
   }
 }
 
