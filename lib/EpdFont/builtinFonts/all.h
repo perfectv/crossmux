@@ -1,14 +1,20 @@
 #pragma once
 
 #ifdef ENABLE_CHINESE_VERSION
-// Chinese build: one CJK font header per UI/reader point size (8/10/12/14/16/
-// 18pt), each covering the top 3000 most-common Chinese characters (frequency-
-// ranked subset of GB2312 Level-1) plus ASCII and full-width CJK punctuation.
-// Raw 2-bit bitmaps — fontconvert.py's --compress is NOT used because the
-// large per-group buffers fragment the heap on a 5+ font load (see
-// build-cn-builtin-fonts.sh for context). Latin builtin headers are skipped;
-// src/main.cpp aliases each Latin EpdFont global to the matching-size CJK
-// header so font-size selection behaves like the Latin build.
+// Chinese build: one CJK font header per UI/reader point size. All sizes are
+// raw 2-bit bitmaps (fontconvert.py's --compress is NOT used because the
+// large per-group buffers fragment the heap on a 5+ font load — see
+// build-cn-builtin-fonts.sh).
+//
+// Character coverage is non-uniform across sizes:
+//   - 8/10/12/14pt: full frequency-ranked subset (top-N of
+//     现代汉语常用字表 + i18n require-from chars) — sized for reader
+//     SMALL/MEDIUM and UI at all readable sizes.
+//   - 16/18pt: i18n-only subset (just the CJK chars used by UI strings,
+//     plus ASCII + Latin-1 + CJK punctuation) — sized for reader
+//     LARGE/EXTRA_LARGE (intended for English EPUB). Chinese EPUB text
+//     at these sizes shows blank for any char outside the i18n subset;
+//     UI strings still render because their chars are always included.
 #include <builtinFonts/chinese_chess_16.h>
 #include <builtinFonts/notosans_cjk_8.h>
 #include <builtinFonts/notosans_cjk_10.h>

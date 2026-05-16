@@ -1,21 +1,33 @@
 #!/usr/bin/env python3
 """
-Trim the GB2312 Level-1 character set down to the top-N most frequent
-characters used in modern Chinese, ranked via wordfreq's Zipf scale.
+Trim a character pool down to the top-N most frequent characters used in
+modern Chinese, ranked via wordfreq's Zipf scale.
 
-Input:   lib/EpdFont/scripts/gb2312_lv1.txt   (3755 chars)
-Output:  lib/EpdFont/scripts/cn_common_chars.txt  (top N, single-line UTF-8)
+Default pool:  lib/EpdFont/scripts/chars_3500_common.txt
+               (教育部《现代汉语常用字表》3500 chars, vendored from
+               https://github.com/elephantnose/characters/blob/master/
+               3500%E5%B8%B8%E7%94%A8%E6%B1%89%E5%AD%97.txt)
+Output:        lib/EpdFont/scripts/cn_common_chars.txt
+               (top N, single-line UTF-8)
 
 The output file feeds pyftsubset's --text-file= in build-cn-builtin-fonts.sh.
 
-Re-run whenever you want to change the target N. The result is committed so
-the firmware build is fully reproducible.
+When --top equals (or exceeds) the pool size, all pool chars are kept and
+the script effectively only adds --require-from chars to the output. This
+is the recommended mode: 3500 common chars covers all of modern Chinese
+that the device reasonably needs to render, and the wordfreq cutoff is
+only useful when intentionally shrinking below 3500 for tight flash
+budgets.
+
+Re-run whenever you want to change the target N or the input pool. The
+result is committed so the firmware build is fully reproducible.
 
 Pass --require-from <file> (repeatable) to force-include every CJK Unified
 Ideograph found in that file regardless of Zipf rank. Use this with the i18n
-YAML files so UI strings always render — GB2312 Lv1 omits common modern
-characters like 浏 (U+6D4F) that would otherwise be silently dropped by the
-renderer (see EpdFont::getTextBounds when getGlyph returns nullptr).
+YAML files so UI strings always render — the 3500 char list omits some
+common modern chars like 浏 (U+6D4F, used in "浏览器") that would otherwise
+be silently dropped by the renderer (see EpdFont::getTextBounds when
+getGlyph returns nullptr).
 
 Requires:  pip install wordfreq jieba
 """
@@ -40,8 +52,12 @@ except ImportError:
 
 
 SCRIPT_DIR = Path(__file__).resolve().parent
-SOURCE_FILE = SCRIPT_DIR / "gb2312_lv1.txt"
+SOURCE_FILE = SCRIPT_DIR / "chars_3500_common.txt"
 OUTPUT_FILE = SCRIPT_DIR / "cn_common_chars.txt"
+# Bonus output: just the --require-from CJK chars, single-line UTF-8. Used by
+# build-cn-builtin-fonts.sh to build the tiny 16pt/18pt i18n-only subset OTF.
+# Only written when at least one --require-from file is provided.
+I18N_OUTPUT_FILE = SCRIPT_DIR / "cn_i18n_chars.txt"
 
 
 def rank_chars(chars) -> list[tuple[str, float]]:
@@ -68,8 +84,10 @@ def main() -> None:
     parser.add_argument(
         "--top",
         type=int,
-        default=3000,
-        help="Number of characters to keep (default: 3000)",
+        default=3500,
+        help="Number of characters to keep (default: 3500, the size of the "
+        "现代汉语常用字表 pool). Lower this to shrink flash; higher only useful "
+        "if --require-from adds chars beyond the pool.",
     )
     parser.add_argument(
         "--require-from",
@@ -94,12 +112,12 @@ def main() -> None:
         sys.exit(1)
 
     raw = SOURCE_FILE.read_text(encoding="utf-8").strip()
-    gb2312_chars = {c for c in raw if not c.isspace()}
+    pool_chars = {c for c in raw if not c.isspace()}
 
     required = load_required([Path(p) for p in args.require_from])
-    required_beyond_gb2312 = sorted(required - gb2312_chars)
+    required_beyond_pool = sorted(required - pool_chars)
 
-    pool = gb2312_chars | required
+    pool = pool_chars | required
     total = len(pool)
 
     if args.top >= total:
@@ -138,18 +156,27 @@ def main() -> None:
         f"Wrote {len(kept_chars)} characters to {OUTPUT_FILE.relative_to(SCRIPT_DIR.parent.parent)}",
         file=sys.stderr,
     )
+
+    if required:
+        i18n_chars = sorted(required)
+        I18N_OUTPUT_FILE.write_text("".join(i18n_chars), encoding="utf-8")
+        print(
+            f"Wrote {len(i18n_chars)} i18n-only characters to "
+            f"{I18N_OUTPUT_FILE.relative_to(SCRIPT_DIR.parent.parent)}",
+            file=sys.stderr,
+        )
     print(
-        f"Pool: {total} chars (GB2312 Lv1 {len(gb2312_chars)} ∪ required {len(required)})  "
+        f"Pool: {total} chars ({SOURCE_FILE.name} {len(pool_chars)} ∪ required {len(required)})  "
         f"→  kept {len(kept)} ({len(required_ranked)} required + "
         f"{len(non_required_kept)} top-Zipf)  →  dropped {len(non_required_dropped)}",
         file=sys.stderr,
     )
 
-    if required_beyond_gb2312:
+    if required_beyond_pool:
         print("", file=sys.stderr)
         print(
-            f"[required] +{len(required_beyond_gb2312)} chars added beyond GB2312 Lv1: "
-            f"{''.join(required_beyond_gb2312)}",
+            f"[required] +{len(required_beyond_pool)} chars added beyond {SOURCE_FILE.name}: "
+            f"{''.join(required_beyond_pool)}",
             file=sys.stderr,
         )
 

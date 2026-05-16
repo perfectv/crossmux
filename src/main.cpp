@@ -41,11 +41,19 @@ FontCacheManager fontCacheManager(renderer.getFontMap(), renderer.getSdCardFonts
 // Fonts
 #ifdef ENABLE_CHINESE_VERSION
 // Chinese build: each Latin EpdFont global aliases the matching-size CJK
-// header (notosans_cjk_{8,10,12,14,16,18}, top-3000-char frequency-ranked
-// subset of GB2312 Level-1, raw 2-bit bitmaps). Bold / italic / bolditalic
-// variants share the single Regular OTF — bold and italic styling are not
-// available for built-in CJK glyphs in this build. SD-card fonts continue to
-// provide style variants when loaded.
+// header (notosans_cjk_{8,10,12,14,16,18}, raw 2-bit bitmaps). Bold /
+// italic / bolditalic variants share the single Regular OTF — bold and
+// italic styling are not available for built-in CJK glyphs in this build.
+// SD-card fonts continue to provide style variants when loaded.
+//
+// CJK character coverage is non-uniform across sizes (see
+// build-cn-builtin-fonts.sh):
+//   - 8/10/12/14pt: full subset (top-3500 现代汉语常用字表 by Zipf, ∪
+//     i18n require-from chars). Sized for reader SMALL/MEDIUM and all UI.
+//   - 16/18pt: i18n-only subset (~430 chars from chinese.yaml). Sized
+//     for reader LARGE/EXTRA_LARGE (intended for English EPUB) while
+//     still letting UI strings render — game win banners etc. Chinese
+//     EPUB text at 16/18pt renders blank for chars outside the subset.
 EpdFont notoserif14RegularFont(&notosans_cjk_14);
 EpdFont notoserif14BoldFont(&notosans_cjk_14);
 EpdFont notoserif14ItalicFont(&notosans_cjk_14);
