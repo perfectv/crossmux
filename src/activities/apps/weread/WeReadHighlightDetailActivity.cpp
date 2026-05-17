@@ -270,7 +270,7 @@ void WeReadHighlightDetailActivity::render(RenderLock&&) {
   // Bottom count label (only when this item has a non-negative count badge).
   if (displayCount >= 0) {
     static char countBuf[24];
-    std::snprintf(countBuf, sizeof(countBuf), "%d 人划线", displayCount);
+    std::snprintf(countBuf, sizeof(countBuf), tr(STR_WEREAD_HIGHLIGHT_COUNT_FMT), displayCount);
     const int labelW = renderer.getTextWidth(SMALL_FONT_ID, countBuf);
     const int labelX = sw - metrics.contentSidePadding - labelW;
     const int labelY = sh - metrics.buttonHintsHeight - metrics.verticalSpacing - 16;

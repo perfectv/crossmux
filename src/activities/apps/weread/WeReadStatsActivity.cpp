@@ -79,9 +79,9 @@ void formatHM(uint32_t seconds, char* buf, size_t bufLen) {
   const uint32_t h = seconds / 3600;
   const uint32_t m = (seconds % 3600) / 60;
   if (h > 0) {
-    std::snprintf(buf, bufLen, "%u 小时 %u 分钟", static_cast<unsigned>(h), static_cast<unsigned>(m));
+    std::snprintf(buf, bufLen, tr(STR_WEREAD_TIME_HM_FMT), static_cast<unsigned>(h), static_cast<unsigned>(m));
   } else {
-    std::snprintf(buf, bufLen, "%u 分钟", static_cast<unsigned>(m));
+    std::snprintf(buf, bufLen, tr(STR_WEREAD_TIME_M_FMT), static_cast<unsigned>(m));
   }
 }
 
@@ -99,20 +99,21 @@ void WeReadStatsActivity::renderContent(Rect contentRect) {
 
   // 1) Total time + compare
   formatHM(stats_.totalReadTime, buf, sizeof(buf));
-  std::string line1 = std::string("本月阅读: ") + buf;
+  std::string line1 = std::string(tr(STR_WEREAD_MONTH_READ_PREFIX)) + buf;
   renderer.drawText(NOTOSANS_16_FONT_ID, contentRect.x + 20, y + 22, line1.c_str(), true);
   y += lineH + 6;
 
   // 2) Days + day-average + compare
-  formatHM(stats_.dayAverageReadTime, buf, sizeof(buf));
-  std::string line2 = std::string("阅读 ") + std::to_string(stats_.readDays) + " 天 · 日均 " + buf;
-  renderer.drawText(NOTOSANS_14_FONT_ID, contentRect.x + 20, y + 20, line2.c_str(), true);
+  char dayAvgBuf[64];
+  formatHM(stats_.dayAverageReadTime, dayAvgBuf, sizeof(dayAvgBuf));
+  std::snprintf(buf, sizeof(buf), tr(STR_WEREAD_DAYS_AVG_FMT), stats_.readDays, dayAvgBuf);
+  renderer.drawText(NOTOSANS_14_FONT_ID, contentRect.x + 20, y + 20, buf, true);
   y += lineH;
 
   if (stats_.compareValid) {
     const int permille = stats_.compareTenths;
     const char* sign = permille >= 0 ? "↑" : "↓";
-    std::snprintf(buf, sizeof(buf), "对比上月: %s %d.%d%%", sign, std::abs(permille) / 10,
+    std::snprintf(buf, sizeof(buf), tr(STR_WEREAD_COMPARE_MONTH_FMT), sign, std::abs(permille) / 10,
                   std::abs(permille) % 10);
     renderer.drawText(NOTOSANS_14_FONT_ID, contentRect.x + 20, y + 20, buf, true);
     y += lineH;
@@ -131,7 +132,7 @@ void WeReadStatsActivity::renderContent(Rect contentRect) {
 
   // 3) Top books
   if (!stats_.topBooks.empty()) {
-    renderer.drawText(NOTOSANS_16_FONT_ID, contentRect.x + 20, y + 22, "读得最多的书", true);
+    renderer.drawText(NOTOSANS_16_FONT_ID, contentRect.x + 20, y + 22, tr(STR_WEREAD_TOP_BOOKS), true);
     y += lineH + 4;
     int idx = 1;
     for (const auto& tb : stats_.topBooks) {

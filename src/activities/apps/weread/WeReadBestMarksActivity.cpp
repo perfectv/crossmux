@@ -53,7 +53,7 @@ void WeReadBestMarksActivity::renderContent(Rect contentRect) {
   GUI.drawList(
       renderer, contentRect, static_cast<int>(rows_.size()), selected, [this](int i) { return rows_[i].markText; },
       [this](int i) {
-        std::snprintf(countBuf, sizeof(countBuf), "%d 人划线", rows_[i].totalCount);
+        std::snprintf(countBuf, sizeof(countBuf), tr(STR_WEREAD_HIGHLIGHT_COUNT_FMT), rows_[i].totalCount);
         return std::string(countBuf);
       });
 }
