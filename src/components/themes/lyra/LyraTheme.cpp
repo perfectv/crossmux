@@ -19,6 +19,7 @@
 #include "components/icons/cellular.h"
 #ifdef ENABLE_CHINESE_VERSION
 #include "components/icons/chinese_chess.h"
+#include "components/icons/weread.h"
 #endif
 #include "components/icons/cover.h"
 #include "components/icons/file24.h"
@@ -93,6 +94,8 @@ const uint8_t* iconForName(UIIcon icon, int size) {
 #ifdef ENABLE_CHINESE_VERSION
       case UIIcon::ChineseChess:
         return ChineseChessIcon;
+      case UIIcon::WeRead:
+        return WeReadIcon;
 #endif
       case UIIcon::Minesweeper:
         return MinesweeperIcon;

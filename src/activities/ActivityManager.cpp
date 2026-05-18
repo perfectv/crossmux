@@ -10,6 +10,12 @@
 #include "apps/cellular/CellularGameActivity.h"
 #ifdef ENABLE_CHINESE_VERSION
 #include "apps/chinese-chess/ChineseChessMenuActivity.h"
+#include "apps/weread/WeReadBookActivity.h"
+#include "apps/weread/WeReadMenuActivity.h"
+#include "apps/weread/WeReadRecommendActivity.h"
+#include "apps/weread/WeReadSearchActivity.h"
+#include "apps/weread/WeReadShelfActivity.h"
+#include "apps/weread/WeReadStatsActivity.h"
 #endif
 #include "apps/gomoku/GomokuMenuActivity.h"
 #include "apps/minesweeper/MinesweeperMenuActivity.h"
@@ -237,6 +243,30 @@ void ActivityManager::goToCellular() {
 #ifdef ENABLE_CHINESE_VERSION
 void ActivityManager::goToChineseChess() {
   replaceActivity(std::make_unique<ChineseChessMenuActivity>(renderer, mappedInput));
+}
+
+void ActivityManager::goToWeRead() {
+  replaceActivity(std::make_unique<WeReadMenuActivity>(renderer, mappedInput));
+}
+
+void ActivityManager::goToWeReadShelf() {
+  replaceActivity(std::make_unique<WeReadShelfActivity>(renderer, mappedInput));
+}
+
+void ActivityManager::goToWeReadSearch() {
+  replaceActivity(std::make_unique<WeReadSearchActivity>(renderer, mappedInput));
+}
+
+void ActivityManager::goToWeReadRecommend() {
+  replaceActivity(std::make_unique<WeReadRecommendActivity>(renderer, mappedInput));
+}
+
+void ActivityManager::goToWeReadStats() {
+  replaceActivity(std::make_unique<WeReadStatsActivity>(renderer, mappedInput));
+}
+
+void ActivityManager::goToWeReadBook(std::string bookId, std::string title) {
+  replaceActivity(std::make_unique<WeReadBookActivity>(renderer, mappedInput, std::move(bookId), std::move(title)));
 }
 #endif
 
