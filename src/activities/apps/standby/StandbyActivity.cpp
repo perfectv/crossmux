@@ -72,6 +72,7 @@ void StandbyActivity::onEnter() {
   Activity::onEnter();
   LOG_DBG("STANDBY", "onEnter free heap=%u", static_cast<unsigned>(ESP.getFreeHeap()));
   faceIndex_ = 0;
+  inverseMode_ = false;
   currentFace_ = kFaces[faceIndex_].create();
   if (!currentFace_) {
     LOG_ERR("STANDBY", "OOM allocating face");
@@ -333,8 +334,16 @@ void StandbyActivity::loop() {
     return;
   }
 
-  // Confirm is currently unbound and reserved for future face-specific or
-  // chrome-toggle behaviour.
+  // Confirm: toggle inverse (black background / white content) regardless of
+  // Normal vs. Immersive. invertScreen() flips the whole framebuffer right
+  // before displayBuffer(), so title / battery / face dots / face content all
+  // invert together — no per-face plumbing required.
+  if (mappedInput.wasReleased(MappedInputManager::Button::Confirm)) {
+    lastInputMs_ = millis();
+    inverseMode_ = !inverseMode_;
+    requestUpdate();
+    return;
+  }
 
   pumpTimeSync();
 
@@ -370,6 +379,7 @@ void StandbyActivity::render(RenderLock&&) {
   currentFace_->render(renderer, Rect{0, 0, sw, sh});
 
   if (mode_ != DisplayMode::Normal) {
+    if (inverseMode_) renderer.invertScreen();
     renderer.displayBuffer();
     return;
   }
@@ -392,6 +402,7 @@ void StandbyActivity::render(RenderLock&&) {
 
   // Standby stays on FAST_REFRESH end-to-end — no full/half waveform flashes.
   // We accept some long-term ghosting in exchange for a calm, non-blinking face.
+  if (inverseMode_) renderer.invertScreen();
   renderer.displayBuffer();
 }
 
