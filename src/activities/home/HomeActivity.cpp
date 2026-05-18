@@ -211,6 +211,10 @@ void HomeActivity::loop() {
       onSettingsOpen();
     }
   }
+
+  if (mappedInput.wasReleased(MappedInputManager::Button::Back)) {
+    onStandbyOpen();
+  }
 }
 
 void HomeActivity::render(RenderLock&&) {
@@ -254,7 +258,7 @@ void HomeActivity::render(RenderLock&&) {
       [&menuItems](int index) { return std::string(menuItems[index]); },
       [&menuIcons](int index) { return menuIcons[index]; });
 
-  const auto labels = mappedInput.mapLabels("", tr(STR_SELECT), tr(STR_DIR_UP), tr(STR_DIR_DOWN));
+  const auto labels = mappedInput.mapLabels(tr(STR_STANDBY_TITLE), tr(STR_SELECT), tr(STR_DIR_UP), tr(STR_DIR_DOWN));
   GUI.drawButtonHints(renderer, labels.btn1, labels.btn2, labels.btn3, labels.btn4);
 
   renderer.displayBuffer();
@@ -281,3 +285,5 @@ void HomeActivity::onFileTransferOpen() { activityManager.goToFileTransfer(); }
 void HomeActivity::onOpdsBrowserOpen() { activityManager.goToBrowser(); }
 
 void HomeActivity::onAppsOpen() { activityManager.goToApps(); }
+
+void HomeActivity::onStandbyOpen() { activityManager.goToStandby(); }

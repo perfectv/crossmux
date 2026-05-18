@@ -287,7 +287,7 @@ void StandbyActivity::finishTimeSync() {
 
 void StandbyActivity::loop() {
   if (mappedInput.wasReleased(MappedInputManager::Button::Back)) {
-    activityManager.goToApps();
+    activityManager.goHome();
     return;
   }
 
