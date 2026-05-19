@@ -14,6 +14,9 @@
 
 #include "../../ActivityResult.h"
 #include "../../network/WifiSelectionActivity.h"
+#ifdef ENABLE_CHINESE_VERSION
+#include "ChineseCalendarFace.h"
+#endif
 #include "SloppyClockFace.h"
 #include "StandbyTime.h"
 #include "WifiCredentialStore.h"
@@ -27,14 +30,54 @@ constexpr uint32_t kWifiTimeoutMs = 15000u;  // Same as WifiSelectionActivity
 constexpr uint32_t kNtpTimeoutMs = 12000u;   // SNTP poll budget (multi-server DNS + handshake)
 
 // Face factory table. Add new faces by appending a row here and including the
-// corresponding header above — StandbyActivity needs no other change.
+// corresponding header above. Each entry also declares an isAvailable()
+// predicate so faces can be hidden under specific runtime conditions (e.g.
+// orientation-only). When a face is unavailable it is skipped during cycling
+// and the bottom pager-dot strip collapses accordingly.
 struct FaceEntry {
   std::unique_ptr<StandbyFace> (*create)();
+  bool (*isAvailable)(int sw, int sh);
 };
 constexpr FaceEntry kFaces[] = {
-    {[]() -> std::unique_ptr<StandbyFace> { return makeUniqueNoThrow<SloppyClockFace>(); }},
+    {[]() -> std::unique_ptr<StandbyFace> { return makeUniqueNoThrow<SloppyClockFace>(); },
+     [](int, int) { return true; }},
+#ifdef ENABLE_CHINESE_VERSION
+    {[]() -> std::unique_ptr<StandbyFace> { return makeUniqueNoThrow<ChineseCalendarFace>(); },
+     [](int sw, int sh) { return sh > sw; }},  // portrait only
+#endif
 };
 constexpr uint8_t kFaceCount = static_cast<uint8_t>(sizeof(kFaces) / sizeof(kFaces[0]));
+
+uint8_t countAvailableFaces(int sw, int sh) {
+  uint8_t n = 0;
+  for (uint8_t i = 0; i < kFaceCount; ++i) {
+    if (kFaces[i].isAvailable(sw, sh)) ++n;
+  }
+  return n;
+}
+
+// Map a "rank among available faces" (0-based) back to a kFaces[] index.
+// Returns kFaceCount if none match (only happens when no face is available,
+// which can't currently occur since SloppyClockFace is always available).
+uint8_t availableFaceIndexFromRank(int sw, int sh, uint8_t rank) {
+  uint8_t seen = 0;
+  for (uint8_t i = 0; i < kFaceCount; ++i) {
+    if (!kFaces[i].isAvailable(sw, sh)) continue;
+    if (seen == rank) return i;
+    ++seen;
+  }
+  return kFaceCount;
+}
+
+uint8_t rankOfAvailableFace(int sw, int sh, uint8_t faceIdx) {
+  uint8_t seen = 0;
+  for (uint8_t i = 0; i < kFaceCount; ++i) {
+    if (!kFaces[i].isAvailable(sw, sh)) continue;
+    if (i == faceIdx) return seen;
+    ++seen;
+  }
+  return 0;  // faceIdx is unavailable — caller treats it as "use the first"
+}
 
 // Once per power-on, Standby may push the WiFi selection UI to help the user
 // get online for NTP sync. After it has been shown (regardless of whether the
@@ -46,8 +89,8 @@ bool g_promptedForWifiThisSession = false;
 // Bottom-center page indicator dots. One dot per face, filled for the current
 // face. Drawn only in Normal mode — hidden once we go Immersive.
 constexpr int kDotDiameter = 6;
-constexpr int kDotSpacing = 14;     // gap between dot centers
-constexpr int kDotBottomInset = 24; // distance from bottom edge to top of dots
+constexpr int kDotSpacing = 14;      // gap between dot centers
+constexpr int kDotBottomInset = 24;  // distance from bottom edge to top of dots
 
 void drawFaceDots(const GfxRenderer& renderer, int sw, int sh, uint8_t total, uint8_t current) {
   if (total == 0) return;
@@ -71,7 +114,13 @@ void drawFaceDots(const GfxRenderer& renderer, int sw, int sh, uint8_t total, ui
 void StandbyActivity::onEnter() {
   Activity::onEnter();
   LOG_DBG("STANDBY", "onEnter free heap=%u", static_cast<unsigned>(ESP.getFreeHeap()));
+  // Always default to face 0 (Sloppy Clock). If face 0 is somehow unavailable
+  // (currently impossible), fall back to the first available index.
   faceIndex_ = 0;
+  if (!kFaces[0].isAvailable(renderer.getScreenWidth(), renderer.getScreenHeight())) {
+    const uint8_t idx = availableFaceIndexFromRank(renderer.getScreenWidth(), renderer.getScreenHeight(), 0);
+    if (idx < kFaceCount) faceIndex_ = idx;
+  }
   inverseMode_ = false;
   currentFace_ = kFaces[faceIndex_].create();
   if (!currentFace_) {
@@ -104,10 +153,19 @@ void StandbyActivity::onExit() {
 }
 
 void StandbyActivity::switchFace(int8_t delta) {
-  if (kFaceCount <= 1) return;
+  const int sw = renderer.getScreenWidth();
+  const int sh = renderer.getScreenHeight();
+  const uint8_t avail = countAvailableFaces(sw, sh);
+  if (avail <= 1) return;
+
+  const uint8_t curRank = rankOfAvailableFace(sw, sh, faceIndex_);
+  const uint8_t newRank = static_cast<uint8_t>((curRank + avail + delta) % avail);
+  const uint8_t newIdx = availableFaceIndexFromRank(sw, sh, newRank);
+  if (newIdx >= kFaceCount || newIdx == faceIndex_) return;
+
   if (currentFace_) currentFace_->onExit();
   currentFace_.reset();
-  faceIndex_ = static_cast<uint8_t>((faceIndex_ + kFaceCount + delta) % kFaceCount);
+  faceIndex_ = newIdx;
   currentFace_ = kFaces[faceIndex_].create();
   if (!currentFace_) {
     LOG_ERR("STANDBY", "OOM switching face");
@@ -189,9 +247,8 @@ void StandbyActivity::promptForWifi() {
   // we just failed on; let the user pick.
   g_promptedForWifiThisSession = true;
   LOG_DBG("STANDBY", "Prompting WiFi selection UI");
-  startActivityForResult(
-      std::make_unique<WifiSelectionActivity>(renderer, mappedInput, /*autoConnect=*/false),
-      [this](const ActivityResult& result) { onWifiResult(result); });
+  startActivityForResult(std::make_unique<WifiSelectionActivity>(renderer, mappedInput, /*autoConnect=*/false),
+                         [this](const ActivityResult& result) { onWifiResult(result); });
 }
 
 void StandbyActivity::onWifiResult(const ActivityResult& result) {
@@ -235,8 +292,8 @@ void StandbyActivity::pumpTimeSync() {
       return;
     }
     if (st == WL_CONNECT_FAILED || st == WL_NO_SSID_AVAIL || elapsed >= kWifiTimeoutMs) {
-      LOG_DBG("STANDBY", "Silent WiFi sync failed (status=%d, t=%ums)",
-              static_cast<int>(st), static_cast<unsigned>(elapsed));
+      LOG_DBG("STANDBY", "Silent WiFi sync failed (status=%d, t=%ums)", static_cast<int>(st),
+              static_cast<unsigned>(elapsed));
       // Tear down our own WiFi state cleanly, then push the selection UI
       // (once per session). If we've already prompted, stay in fallback.
       if (esp_sntp_enabled()) esp_sntp_stop();
@@ -292,17 +349,23 @@ void StandbyActivity::loop() {
     return;
   }
 
-  // Up/Down: forward "shake" to the current face. For SloppyClock this rerolls
-  // the style; future faces may interpret it differently or ignore. Pressing
-  // either button from Immersive wakes back to Normal first.
-  if (mappedInput.wasReleased(MappedInputManager::Button::Up) ||
-      mappedInput.wasReleased(MappedInputManager::Button::Down)) {
+  // Up/Down: page navigation, dispatched to the current face.
+  //   - SloppyClock: each press rerolls the style (treated as a shake).
+  //   - ChineseCalendar: Up = previous day, Down = next day.
+  // Pressing either button from Immersive wakes back to Normal first.
+  const bool upPressed = mappedInput.wasReleased(MappedInputManager::Button::Up);
+  const bool downPressed = mappedInput.wasReleased(MappedInputManager::Button::Down);
+  if (upPressed || downPressed) {
     lastInputMs_ = millis();
     if (mode_ == DisplayMode::Immersive) {
       mode_ = DisplayMode::Normal;
       requestUpdate();
     } else if (currentFace_) {
-      currentFace_->onShake(esp_random() ^ static_cast<uint32_t>(millis()));
+      if (upPressed) {
+        currentFace_->onPagePrev();
+      } else {
+        currentFace_->onPageNext();
+      }
       requestUpdate();
     }
     return;
@@ -381,24 +444,28 @@ void StandbyActivity::render(RenderLock&&) {
   if (mode_ != DisplayMode::Normal) {
     if (inverseMode_) renderer.invertScreen();
     renderer.displayBuffer();
+    // Opt-in faces (老黄历) get a 4-level gray LUT enhancement layered on
+    // the BW image. Only fires in Immersive — Normal-mode navigation needs
+    // the ~300-500ms FAST_REFRESH and can't afford the ~2s gray LUT.
+    applyGrayscaleEnhancement(sw, sh);
     return;
   }
 
   // Top-center face title (or sync state). Small font, no chrome container,
   // no separator line — Apple Standby-style minimal overlay.
-  const char* title = (syncState_ != SyncState::Idle)
-                          ? tr(STR_STANDBY_SYNCING)
-                          : I18n::getInstance().get(currentFace_->titleId());
+  const char* title =
+      (syncState_ != SyncState::Idle) ? tr(STR_STANDBY_SYNCING) : I18n::getInstance().get(currentFace_->titleId());
   renderer.drawCenteredText(SMALL_FONT_ID, metrics.topPadding, title, /*black=*/true);
 
   // Top-right battery icon (no percentage text). Reuses BaseTheme::drawBatteryRight.
   constexpr int kBatW = 16;
   constexpr int kBatH = 12;
-  GUI.drawBatteryRight(renderer,
-                       Rect{sw - kBatW - metrics.contentSidePadding, metrics.topPadding, kBatW, kBatH},
+  GUI.drawBatteryRight(renderer, Rect{sw - kBatW - metrics.contentSidePadding, metrics.topPadding, kBatW, kBatH},
                        /*showPercentage=*/false);
 
-  drawFaceDots(renderer, sw, sh, kFaceCount, faceIndex_);
+  const uint8_t availFaces = countAvailableFaces(sw, sh);
+  const uint8_t curRank = rankOfAvailableFace(sw, sh, faceIndex_);
+  drawFaceDots(renderer, sw, sh, availFaces, curRank);
 
   // Standby stays on FAST_REFRESH end-to-end — no full/half waveform flashes.
   // We accept some long-term ghosting in exchange for a calm, non-blinking face.
@@ -406,3 +473,28 @@ void StandbyActivity::render(RenderLock&&) {
   renderer.displayBuffer();
 }
 
+// Two extra renders (LSB then MSB) into scratch buffers, composited with the
+// BW backup by the gray LUT waveform. Mirrors EpubReaderActivity.cpp:813-837.
+// inverseMode_ short-circuits because invertScreen is BW-only and would mix
+// poorly with the grayscale composite.
+void StandbyActivity::applyGrayscaleEnhancement(int sw, int sh) {
+  if (!currentFace_->wantsGrayscale() || inverseMode_) return;
+  if (!renderer.storeBwBuffer()) {
+    LOG_ERR("STANDBY", "Grayscale AA skipped: storeBwBuffer failed");
+    return;
+  }
+
+  renderer.clearScreen(0x00);
+  renderer.setRenderMode(GfxRenderer::GRAYSCALE_LSB);
+  currentFace_->render(renderer, Rect{0, 0, sw, sh});
+  renderer.copyGrayscaleLsbBuffers();
+
+  renderer.clearScreen(0x00);
+  renderer.setRenderMode(GfxRenderer::GRAYSCALE_MSB);
+  currentFace_->render(renderer, Rect{0, 0, sw, sh});
+  renderer.copyGrayscaleMsbBuffers();
+
+  renderer.displayGrayBuffer();
+  renderer.setRenderMode(GfxRenderer::BW);
+  renderer.restoreBwBuffer();
+}
