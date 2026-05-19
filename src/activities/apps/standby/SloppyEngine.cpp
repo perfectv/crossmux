@@ -104,20 +104,22 @@ inline void transformLocal(float lx, float ly, const DigitParams& p, int& outX, 
 // coincide at the same pixel, displayGrayBuffer composes it as gray, not
 // black — the font code at GfxRenderer.cpp:191-202 makes the same
 // exclusion (black glyph pixels are skipped in the LSB/MSB passes).
+//
+// Big procedural digits stay pure BW even when the standby face requests
+// 4-level grayscale enhancement. Adding antialiased gray halos around the
+// already low-res geometric strokes makes them look fuzzy / smudged, not
+// smoother — so skip the LSB/MSB scratch contributions entirely. The BW
+// stamp itself paints `strokeWidth` parallel copies of the segment in a
+// width × width centered grid, giving each sample a square-pen footprint
+// (verticals get proper weight, endpoints get symmetric square caps).
 inline void drawStrokeSegment(GfxRenderer& renderer, int x0, int y0, int x1, int y1, int strokeWidth) {
-  switch (renderer.getRenderMode()) {
-    case GfxRenderer::GRAYSCALE_LSB:
-      renderer.drawLine(x0, y0, x1, y1, strokeWidth + 2, /*state=*/false);
-      renderer.drawLine(x0, y0, x1, y1, strokeWidth, /*state=*/true);
-      break;
-    case GfxRenderer::GRAYSCALE_MSB:
-      renderer.drawLine(x0, y0, x1, y1, strokeWidth + 4, /*state=*/false);
-      renderer.drawLine(x0, y0, x1, y1, strokeWidth, /*state=*/true);
-      break;
-    case GfxRenderer::BW:
-    default:
-      renderer.drawLine(x0, y0, x1, y1, strokeWidth, /*state=*/true);
-      break;
+  if (renderer.getRenderMode() != GfxRenderer::BW) return;
+
+  const int half = strokeWidth / 2;
+  for (int j = -half; j <= half; ++j) {
+    for (int i = -half; i <= half; ++i) {
+      renderer.drawLine(x0 + i, y0 + j, x1 + i, y1 + j, /*state=*/true);
+    }
   }
 }
 
