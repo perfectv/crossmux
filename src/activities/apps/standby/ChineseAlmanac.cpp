@@ -218,12 +218,21 @@ uint8_t daysInGregMonth(int y, int m) {
 }
 
 // Absolute day index = days since 1900-01-01 (which is index 0, a Monday).
-// Range: 0 (1900-01-01) .. 73414 (2100-12-31).
+// Public range for `computeAlmanac` callers: 0 (1900-01-01) .. 73414
+// (2100-12-31). Internally also valid for the adjacent years 1899 and 2101
+// (returning a negative or >73414 absDay) so the solar-term scan/lookup at
+// the very ends of the supported window can reach across the year boundary.
 int32_t gregorianToAbsDay(int y, int m, int d) {
-  // Sum full years before y.
   int32_t days = 0;
-  for (int yy = 1900; yy < y; ++yy) {
-    days += isLeapGregorian(yy) ? 366 : 365;
+  if (y >= 1900) {
+    for (int yy = 1900; yy < y; ++yy) {
+      days += isLeapGregorian(yy) ? 366 : 365;
+    }
+  } else {
+    // y < 1900: count backward from 1900-01-01, yielding a negative offset.
+    for (int yy = y; yy < 1900; ++yy) {
+      days -= isLeapGregorian(yy) ? 366 : 365;
+    }
   }
   for (int mm = 1; mm < m; ++mm) {
     days += daysInGregMonth(y, mm);
@@ -441,13 +450,15 @@ bool computeAlmanac(const struct tm& t, AlmanacDay& out) {
 
   // ---- Current and next solar terms ---------------------------------
   // Candidate terms whose abs day is <= absDay: scan candidates in
-  // calendar year `gy` and `gy-1`. Find max.
+  // calendar year `gy` and `gy-1`. Find max. We allow y == 1899 (the
+  // adjacent year) so January 1900 pre-立春 dates still find their most
+  // recent term (冬至 / 大寒 of 1899); gregorianToAbsDay handles the
+  // negative absDay arithmetic for that case.
   int bestTerm = -1;
   int bestYear = gy;
-  int32_t bestAbs = -1;
+  int32_t bestAbs = INT32_MIN;
   for (int delta = 0; delta < 2; ++delta) {
     const int y = gy - delta;
-    if (y < 1900) continue;
     for (int i = 0; i < 24; ++i) {
       const int32_t ta = termAbsDay(y, i);
       if (ta <= absDay && ta > bestAbs) {
@@ -457,16 +468,19 @@ bool computeAlmanac(const struct tm& t, AlmanacDay& out) {
       }
     }
   }
-  // If we somehow fell before 1900 立春 (e.g. Jan 1900), use 0/0 as a safe
-  // sentinel: caller will see daysToNextTerm > 0.
+  // Defensive: should be unreachable now that the scan reaches y=gy-1, but
+  // keep a safe fallback in case the input year ever drifts below 1900.
   if (bestTerm < 0) {
-    bestTerm = 23;  // 大寒 of previous year
+    bestTerm = 23;
     bestYear = gy - 1;
-    bestAbs = (gy - 1 >= 1900) ? termAbsDay(gy - 1, 23) : absDay;
+    bestAbs = absDay;
   }
   out.termCurrentIdx = static_cast<uint8_t>(bestTerm);
 
   // Next term: index (bestTerm + 1) % 24, in the appropriate calendar year.
+  // For year-boundary cases we may compute termAbsDay() for year 1899 or
+  // 2101 — both are accepted by gregorianToAbsDay/solarTermDay (the latter
+  // extrapolates with ±1 day error, already acceptable per project policy).
   int nextIdx = (bestTerm + 1) % 24;
   int nextYear = bestYear;
   if (nextIdx == 0) {
@@ -475,7 +489,6 @@ bool computeAlmanac(const struct tm& t, AlmanacDay& out) {
     // 冬至 (21, Dec) → 小寒 (22, Jan year+1).
     nextYear += 1;
   }
-  if (nextYear > 2100) nextYear = 2100;
   const int32_t nextAbs = termAbsDay(nextYear, nextIdx);
   out.termNextIdx = static_cast<uint8_t>(nextIdx);
   int32_t dtn = nextAbs - absDay;

@@ -57,8 +57,8 @@ class StandbyFace {
   // a calendar face would return "seconds to next midnight".
   virtual uint32_t secondsUntilNextWake() const = 0;
 
-  // Faces that only render correctly in portrait override this and return
-  // true. StandbyActivity hides such faces from rotation while the screen is
-  // landscape (dot strip collapses; Left/Right skip them).
-  virtual bool requiresPortrait() const { return false; }
+  // Note on per-orientation availability: StandbyActivity decides whether to
+  // include a face in the active rotation via the `FaceEntry::isAvailable
+  // (sw, sh)` predicate declared in StandbyActivity.cpp's face table. Faces
+  // themselves don't need to know about screen dimensions or orientation.
 };

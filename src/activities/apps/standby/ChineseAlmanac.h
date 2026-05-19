@@ -57,9 +57,9 @@ extern const char* const kJiPool[12][4];        // 12 sets × 4 ji items (by day
 
 }  // namespace chinese_almanac
 
-// Compute the almanac for the given UTC+8 instant. Caller passes a `time_t`
-// already adjusted to Beijing time (i.e. `time(nullptr)` with TZ set by
-// configTime(8*3600, ...) — `localtime_r` returns local Beijing struct tm).
+// Compute the almanac for the given Beijing-local time. Caller passes a
+// `struct tm` already expressed in Beijing local time, typically obtained
+// via `localtime_r(&t, &tm)` after `configTime(8*3600, ...)` has set the TZ.
 //
 // Returns false (and leaves `out` indeterminate) if the date is outside
 // 1900-01-01 .. 2100-12-31.
