@@ -19,6 +19,7 @@ class WeReadShelfActivity final : public WeReadFetchActivity {
   const char* headerTitle() const override;
   void renderContent(Rect contentRect) override;
   void onConfirm(int index) override;
+  bool tryLoadFromCache() override;
 
  private:
   std::vector<WeReadModels::BookCard> books_;

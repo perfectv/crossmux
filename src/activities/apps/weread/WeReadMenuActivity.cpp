@@ -12,6 +12,7 @@
 #include "../../network/WifiSelectionActivity.h"
 #include "WeReadKeyStore.h"
 #include "WeReadSetupActivity.h"
+#include "WeReadSyncAllActivity.h"
 
 namespace {
 
@@ -22,10 +23,11 @@ enum class MenuItem : uint8_t {
   Search,
   ForYou,
   Stats,
+  SyncAll,
   Setup,
 };
 
-constexpr int kMenuItemCount = 5;
+constexpr int kMenuItemCount = 6;
 
 StrId titleFor(int idx) {
   switch (static_cast<MenuItem>(idx)) {
@@ -37,6 +39,8 @@ StrId titleFor(int idx) {
       return StrId::STR_WEREAD_MENU_RECOMMEND;
     case MenuItem::Stats:
       return StrId::STR_WEREAD_MENU_STATS;
+    case MenuItem::SyncAll:
+      return StrId::STR_WEREAD_MENU_SYNC_ALL;
     case MenuItem::Setup:
       return StrId::STR_WEREAD_MENU_SETUP;
   }
@@ -87,8 +91,7 @@ void WeReadMenuActivity::launchAutoConnect() {
     refreshGates();
     requestUpdate();
   };
-  startActivityForResult(
-      std::make_unique<WifiSelectionActivity>(renderer, mappedInput, /*autoConnect=*/true), handler);
+  startActivityForResult(std::make_unique<WifiSelectionActivity>(renderer, mappedInput, /*autoConnect=*/true), handler);
 }
 
 void WeReadMenuActivity::onExit() { Activity::onExit(); }
@@ -160,6 +163,14 @@ void WeReadMenuActivity::onSelect() {
     case MenuItem::Stats:
       activityManager.goToWeReadStats();
       break;
+    case MenuItem::SyncAll: {
+      auto handler = [this](const ActivityResult&) {
+        refreshGates();
+        requestUpdate();
+      };
+      startActivityForResult(std::make_unique<WeReadSyncAllActivity>(renderer, mappedInput), handler);
+      break;
+    }
     case MenuItem::Setup:
       break;  // handled above
   }

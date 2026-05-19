@@ -81,6 +81,11 @@ class WeReadFetchActivity : public Activity {
   // any in-flight response.
   void requestRefresh();
 
+  // Offline-mode hook. Subclasses override to load their data from
+  // WeReadCacheStore. Returning true short-circuits the network fetch and
+  // brings the Activity straight to a Ready state. Default: no cache support.
+  virtual bool tryLoadFromCache() { return false; }
+
   // State exposed to subclass renderers
   enum class State : int { Idle = 0, Loading = 1, Ready = 2, Error = 3 };
   State currentState() const;
@@ -107,6 +112,9 @@ class WeReadFetchActivity : public Activity {
 
   bool wifiOk_ = false;
   bool keyOk_ = false;
+  // True after a successful tryLoadFromCache() in offline mode. Makes
+  // currentState() return Ready without a real fetch context.
+  bool offlineReady_ = false;
 
   void spawnFetch();
   void consumeResultIfReady();

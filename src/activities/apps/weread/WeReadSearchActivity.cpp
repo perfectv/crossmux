@@ -40,10 +40,10 @@ void WeReadSearchActivity::launchKeyboard() {
     // public entry point — onEnter() does both.
     WeReadFetchActivity::onEnter();
   };
-  startActivityForResult(std::make_unique<KeyboardEntryActivity>(renderer, mappedInput,
-                                                                  std::string(tr(STR_WEREAD_SEARCH_PROMPT)), keyword_,
-                                                                  63, InputType::Text),
-                         handler);
+  startActivityForResult(
+      std::make_unique<KeyboardEntryActivity>(renderer, mappedInput, std::string(tr(STR_WEREAD_SEARCH_PROMPT)),
+                                              keyword_, 63, InputType::Text),
+      handler);
 }
 
 void WeReadSearchActivity::loop() {

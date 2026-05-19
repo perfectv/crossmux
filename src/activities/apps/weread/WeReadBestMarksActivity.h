@@ -22,6 +22,7 @@ class WeReadBestMarksActivity final : public WeReadFetchActivity {
   void renderContent(Rect contentRect) override;
   void onConfirm(int index) override;
   void onBack() override;
+  bool tryLoadFromCache() override;
 
  private:
   std::string bookId_;

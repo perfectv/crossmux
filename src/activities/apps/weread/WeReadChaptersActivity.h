@@ -21,6 +21,7 @@ class WeReadChaptersActivity final : public WeReadFetchActivity {
   const char* headerTitle() const override { return bookTitle_.c_str(); }
   void renderContent(Rect contentRect) override;
   void onBack() override;
+  bool tryLoadFromCache() override;
 
  private:
   std::string bookId_;

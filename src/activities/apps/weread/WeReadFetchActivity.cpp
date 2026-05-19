@@ -18,6 +18,18 @@ void WeReadFetchActivity::onEnter() {
   wifiOk_ = (WiFi.status() == WL_CONNECTED);
   keyOk_ = WeReadKeyStore::has();
   selected = 0;
+  offlineReady_ = false;
+  lastErr_ = WeReadClient::Err::Ok;
+
+  // Cache-first: read SD before touching the network. Falls through to a
+  // live fetch when the subclass has no cached copy yet — the fetch path
+  // then persists via the subclass's parseResponse → saveXxx hook so the
+  // next entry hits the cache.
+  if (tryLoadFromCache()) {
+    offlineReady_ = true;
+    requestUpdate();
+    return;
+  }
 
   if (!preflightFailed()) {
     spawnFetch();
@@ -37,6 +49,7 @@ void WeReadFetchActivity::onExit() {
 }
 
 WeReadFetchActivity::State WeReadFetchActivity::currentState() const {
+  if (offlineReady_) return State::Ready;
   if (!ctx_) return State::Idle;
   return static_cast<State>(ctx_->state.load());
 }
@@ -50,7 +63,12 @@ const char* WeReadFetchActivity::preflightMessage() const {
 }
 
 void WeReadFetchActivity::requestRefresh() {
+  // Manual refresh: force a network round-trip even if we have cached data.
+  // The dedicated "重新同步本书" / "全量同步" entry points are the user-
+  // visible refresh affordances; this stays as the error-state retry path.
   ctx_.reset();
+  offlineReady_ = false;
+  lastErr_ = WeReadClient::Err::Ok;
   wifiOk_ = (WiFi.status() == WL_CONNECTED);
   keyOk_ = WeReadKeyStore::has();
   if (!preflightFailed()) spawnFetch();
@@ -114,14 +132,17 @@ void WeReadFetchActivity::fetchTrampoline(void* arg) {
   delete wrapper;
 
   WeReadClient::Err err = WeReadClient::post(ctx->apiName.c_str(), *ctx->request, *ctx->response,
-                                              /*httpTimeoutMs=*/10000, ctx->filter.get());
+                                             /*httpTimeoutMs=*/10000, ctx->filter.get());
   // Filter is only needed during deserialize — free it before exposing the
   // response to the main thread to release a few KB sooner.
   ctx->filter.reset();
   ctx->err = static_cast<int>(err);
   ctx->state.store(err == WeReadClient::Err::Ok ? static_cast<int>(State::Ready) : static_cast<int>(State::Error));
-  // Activity may or may not still hold a reference — either way, our local
-  // shared_ptr drop here releases this task's claim on Context.
+  // CRITICAL: vTaskDelete(nullptr) never returns, so local destructors do
+  // NOT run on stack unwind. Without an explicit reset the local shared_ptr
+  // leaks the Context (and its JsonDocument response — tens of KB) forever.
+  // Cache flows that fire fetch-tasks back-to-back accumulate the leak fast.
+  ctx.reset();
   vTaskDelete(nullptr);
 }
 
@@ -196,6 +217,7 @@ void WeReadFetchActivity::render(RenderLock&&) {
       case State::Error: {
         const char* msg = (lastErr_ == WeReadClient::Err::Upgrade)   ? tr(STR_WEREAD_UPGRADE_REQUIRED)
                           : (lastErr_ == WeReadClient::Err::Server)  ? tr(STR_WEREAD_SERVER_ERROR)
+                          : (lastErr_ == WeReadClient::Err::NoCache) ? tr(STR_WEREAD_CACHE_NOT_AVAILABLE)
                                                                      : tr(STR_WEREAD_HTTP_ERROR);
         GUI.drawPopup(renderer, msg);
         break;

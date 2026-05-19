@@ -22,6 +22,7 @@ class WeReadSimilarActivity final : public WeReadFetchActivity {
   void renderContent(Rect contentRect) override;
   void onBack() override;
   void onConfirm(int index) override;
+  bool tryLoadFromCache() override;
 
  private:
   std::string bookId_;

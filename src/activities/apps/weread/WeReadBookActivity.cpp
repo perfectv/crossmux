@@ -8,6 +8,8 @@
 #include "../../../components/UITheme.h"
 #include "../../ActivityManager.h"
 #include "WeReadBestMarksActivity.h"
+#include "WeReadCacheBookActivity.h"
+#include "WeReadCacheStore.h"
 #include "WeReadChaptersActivity.h"
 #include "WeReadNotesActivity.h"
 #include "WeReadReviewsActivity.h"
@@ -21,9 +23,10 @@ enum class BookMenuItem : uint8_t {
   Chapters,
   Reviews,
   Similar,
+  CacheToSd,
 };
 
-constexpr int kBookMenuCount = 5;
+constexpr int kBookMenuCount = 6;
 
 StrId titleFor(int idx) {
   switch (static_cast<BookMenuItem>(idx)) {
@@ -37,6 +40,8 @@ StrId titleFor(int idx) {
       return StrId::STR_WEREAD_BOOK_REVIEWS;
     case BookMenuItem::Similar:
       return StrId::STR_WEREAD_BOOK_SIMILAR;
+    case BookMenuItem::CacheToSd:
+      return StrId::STR_WEREAD_BOOK_CACHE;
   }
   return StrId::STR_WEREAD_BOOK_NOTES;
 }
@@ -50,6 +55,16 @@ WeReadBookActivity::WeReadBookActivity(GfxRenderer& renderer, MappedInputManager
 void WeReadBookActivity::onEnter() {
   Activity::onEnter();
   selected = 0;
+
+  // Cache-first: a freshly opened book auto-runs the 5-step sync before the
+  // menu becomes interactive. Subsequent visits hit the cache instantly. The
+  // result handler is a no-op besides repaint — CacheBookActivity is push-
+  // style (startActivityForResult), so control returns here automatically.
+  if (!WeReadCacheStore::hasBookCached(bookId_)) {
+    auto handler = [this](const ActivityResult&) { requestUpdate(); };
+    startActivityForResult(std::make_unique<WeReadCacheBookActivity>(renderer, mappedInput, bookId_, title_), handler);
+    return;
+  }
   requestUpdate();
 }
 
@@ -94,6 +109,10 @@ void WeReadBookActivity::onSelect() {
     case BookMenuItem::Similar:
       startActivityForResult(std::make_unique<WeReadSimilarActivity>(renderer, mappedInput, bookId_, title_), handler);
       break;
+    case BookMenuItem::CacheToSd:
+      startActivityForResult(std::make_unique<WeReadCacheBookActivity>(renderer, mappedInput, bookId_, title_),
+                             handler);
+      break;
   }
 }
 
@@ -110,9 +129,8 @@ void WeReadBookActivity::render(RenderLock&&) {
   const int listY = metrics.topPadding + metrics.headerHeight + metrics.verticalSpacing;
   const int listH = sh - listY - metrics.buttonHintsHeight - metrics.verticalSpacing;
 
-  GUI.drawList(
-      renderer, Rect{0, listY, sw, listH}, kBookMenuCount, selected,
-      [](int i) { return std::string(I18n::getInstance().get(titleFor(i))); });
+  GUI.drawList(renderer, Rect{0, listY, sw, listH}, kBookMenuCount, selected,
+               [](int i) { return std::string(I18n::getInstance().get(titleFor(i))); });
 
   const auto labels = mappedInput.mapLabels(tr(STR_BACK), tr(STR_SELECT), tr(STR_DIR_UP), tr(STR_DIR_DOWN));
   GUI.drawButtonHints(renderer, labels.btn1, labels.btn2, labels.btn3, labels.btn4);

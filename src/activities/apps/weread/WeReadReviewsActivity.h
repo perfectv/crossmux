@@ -22,6 +22,7 @@ class WeReadReviewsActivity final : public WeReadFetchActivity {
   void renderContent(Rect contentRect) override;
   void onConfirm(int index) override;
   void onBack() override;
+  bool tryLoadFromCache() override;
 
  private:
   // Per-row layout cache. Recomputed when the content rect width changes.

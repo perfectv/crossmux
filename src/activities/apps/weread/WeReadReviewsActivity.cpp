@@ -8,12 +8,13 @@
 
 #include "../../../components/UITheme.h"
 #include "../../../fontIds.h"
+#include "WeReadCacheStore.h"
 #include "WeReadReviewDetailActivity.h"
 #include "WeReadReviewFormat.h"
 #include "WeReadTextWrap.h"
 
-WeReadReviewsActivity::WeReadReviewsActivity(GfxRenderer& renderer, MappedInputManager& mappedInput,
-                                             std::string bookId, std::string bookTitle)
+WeReadReviewsActivity::WeReadReviewsActivity(GfxRenderer& renderer, MappedInputManager& mappedInput, std::string bookId,
+                                             std::string bookTitle)
     : WeReadFetchActivity("WeReadReviews", renderer, mappedInput),
       bookId_(std::move(bookId)),
       bookTitle_(std::move(bookTitle)) {}
@@ -83,6 +84,7 @@ void WeReadReviewsActivity::parseResponse(JsonDocument& resp) {
   pageStarts_.clear();
   layoutForWidth_ = 0;
   layoutForHeight_ = 0;
+  WeReadCacheStore::savePublicReviews(bookId_, rows_);
 }
 
 namespace {
@@ -161,8 +163,8 @@ void WeReadReviewsActivity::renderContent(Rect contentRect) {
 
   const int pageIdx = currentPageIndex();
   const int firstCard = pageStarts_[pageIdx];
-  const int afterLast = (pageIdx + 1 < static_cast<int>(pageStarts_.size())) ? pageStarts_[pageIdx + 1]
-                                                                              : static_cast<int>(cards_.size());
+  const int afterLast =
+      (pageIdx + 1 < static_cast<int>(pageStarts_.size())) ? pageStarts_[pageIdx + 1] : static_cast<int>(cards_.size());
 
   const int lineH12 = renderer.getLineHeight(UI_12_FONT_ID);
   const int lineH10 = renderer.getLineHeight(UI_10_FONT_ID);
@@ -238,9 +240,9 @@ std::string joinWithMiddot(std::initializer_list<std::string> parts) {
 void WeReadReviewsActivity::onConfirm(int index) {
   if (index < 0 || index >= static_cast<int>(rows_.size())) return;
   const auto& r = rows_[index];
-  std::string footer = joinWithMiddot({WeReadReviewFormat::rating(r.starPercent),
-                                       WeReadReviewFormat::author(r.authorName),
-                                       WeReadReviewFormat::date(r.createTime)});
+  std::string footer =
+      joinWithMiddot({WeReadReviewFormat::rating(r.starPercent), WeReadReviewFormat::author(r.authorName),
+                      WeReadReviewFormat::date(r.createTime)});
   auto handler = [this](const ActivityResult&) { requestUpdate(); };
   startActivityForResult(
       std::make_unique<WeReadReviewDetailActivity>(renderer, mappedInput, bookTitle_, r.content, std::move(footer)),
@@ -248,3 +250,12 @@ void WeReadReviewsActivity::onConfirm(int index) {
 }
 
 void WeReadReviewsActivity::onBack() { finish(); }
+
+bool WeReadReviewsActivity::tryLoadFromCache() {
+  if (!WeReadCacheStore::loadPublicReviews(bookId_, rows_)) return false;
+  cards_.clear();
+  pageStarts_.clear();
+  layoutForWidth_ = 0;
+  layoutForHeight_ = 0;
+  return true;
+}

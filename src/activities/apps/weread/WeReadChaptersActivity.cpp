@@ -6,6 +6,7 @@
 #include <string>
 
 #include "../../../components/UITheme.h"
+#include "WeReadCacheStore.h"
 
 WeReadChaptersActivity::WeReadChaptersActivity(GfxRenderer& renderer, MappedInputManager& mappedInput,
                                                std::string bookId, std::string bookTitle)
@@ -39,6 +40,7 @@ void WeReadChaptersActivity::parseResponse(JsonDocument& resp) {
     r.paid = c["paid"] | 1;
     if (!r.title.empty()) rows_.push_back(std::move(r));
   }
+  WeReadCacheStore::saveChapters(bookId_, rows_);
 }
 
 void WeReadChaptersActivity::renderContent(Rect contentRect) {
@@ -69,3 +71,5 @@ void WeReadChaptersActivity::renderContent(Rect contentRect) {
 }
 
 void WeReadChaptersActivity::onBack() { finish(); }
+
+bool WeReadChaptersActivity::tryLoadFromCache() { return WeReadCacheStore::loadChapters(bookId_, rows_); }

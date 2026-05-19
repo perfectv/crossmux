@@ -7,6 +7,7 @@
 #include <string>
 
 #include "../../../components/UITheme.h"
+#include "WeReadCacheStore.h"
 #include "WeReadHighlightDetailActivity.h"
 
 WeReadBestMarksActivity::WeReadBestMarksActivity(GfxRenderer& renderer, MappedInputManager& mappedInput,
@@ -42,6 +43,7 @@ void WeReadBestMarksActivity::parseResponse(JsonDocument& resp) {
     r.totalCount = it["totalCount"] | 0;
     if (!r.markText.empty()) rows_.push_back(std::move(r));
   }
+  WeReadCacheStore::saveBestMarks(bookId_, rows_);
 }
 
 void WeReadBestMarksActivity::renderContent(Rect contentRect) {
@@ -75,8 +77,10 @@ void WeReadBestMarksActivity::onConfirm(int index) {
       .getCount = &WeReadBestMarksActivity::detailItemCount,
   };
   auto handler = [this](const ActivityResult&) { requestUpdate(); };
-  startActivityForResult(
-      std::make_unique<WeReadHighlightDetailActivity>(renderer, mappedInput, bookTitle_, src, index), handler);
+  startActivityForResult(std::make_unique<WeReadHighlightDetailActivity>(renderer, mappedInput, bookTitle_, src, index),
+                         handler);
 }
 
 void WeReadBestMarksActivity::onBack() { finish(); }
+
+bool WeReadBestMarksActivity::tryLoadFromCache() { return WeReadCacheStore::loadBestMarks(bookId_, rows_); }

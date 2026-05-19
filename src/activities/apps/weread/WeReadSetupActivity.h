@@ -20,7 +20,9 @@ class WeReadSetupActivity final : public Activity {
   ButtonNavigator buttonNavigator;
   int selected = 0;
 
-  // 0 = Set/Replace, 1 = Clear (visible only when a key is set)
+  // Row layout:
+  //   0 = Set/Replace Key
+  //   1 = Clear Key (only when keyPresent)
   enum class Banner : uint8_t { None, Saved, Cleared, Invalid };
   Banner banner = Banner::None;
 

@@ -14,7 +14,7 @@
 namespace {
 
 constexpr int kIdxSet = 0;
-constexpr int kIdxClear = 1;
+constexpr int kIdxClear = 1;  // only when keyPresent
 
 }  // namespace
 
@@ -33,6 +33,7 @@ void WeReadSetupActivity::onExit() { Activity::onExit(); }
 
 void WeReadSetupActivity::refresh() { keyPresent = WeReadKeyStore::has(); }
 
+// One row for Set/Replace, optional Clear when a key is set.
 int WeReadSetupActivity::itemCount() const { return keyPresent ? 2 : 1; }
 
 void WeReadSetupActivity::loop() {
@@ -77,8 +78,6 @@ void WeReadSetupActivity::onSelect() {
       }
       requestUpdate();
     };
-    // URL layout has the '-' and '.' under one tap and lowercase letters by
-    // default — closest match for a "wrk-xxxx" key shape.
     startActivityForResult(
         std::make_unique<KeyboardEntryActivity>(renderer, mappedInput, std::string(tr(STR_WEREAD_API_KEY_PROMPT)),
                                                 std::string(WeReadKeyStore::load()), 128, InputType::Url),
@@ -108,8 +107,8 @@ void WeReadSetupActivity::render(RenderLock&&) {
       renderer, Rect{0, listY, sw, listH}, itemCount(), selected,
       [present](int i) {
         if (i == kIdxSet) {
-          return std::string(I18n::getInstance().get(present ? StrId::STR_WEREAD_KEY_REPLACE
-                                                             : StrId::STR_WEREAD_KEY_SET_ACTION));
+          return std::string(
+              I18n::getInstance().get(present ? StrId::STR_WEREAD_KEY_REPLACE : StrId::STR_WEREAD_KEY_SET_ACTION));
         }
         return std::string(tr(STR_WEREAD_KEY_CLEAR));
       },

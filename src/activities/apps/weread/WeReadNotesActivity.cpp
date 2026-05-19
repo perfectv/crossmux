@@ -8,6 +8,7 @@
 
 #include "../../../components/UITheme.h"
 #include "../../ActivityManager.h"
+#include "WeReadCacheStore.h"
 #include "WeReadHighlightDetailActivity.h"
 
 WeReadNotesActivity::WeReadNotesActivity(GfxRenderer& renderer, MappedInputManager& mappedInput, std::string bookId,
@@ -40,6 +41,8 @@ void WeReadNotesActivity::parseResponse(JsonDocument& resp) {
     r.createTime = b["createTime"] | 0u;
     if (!r.markText.empty()) rows_.push_back(std::move(r));
   }
+  // Auto-cache: the next visit (online or offline) reads from SD instead.
+  WeReadCacheStore::saveNotes(bookId_, rows_);
 }
 
 void WeReadNotesActivity::renderContent(Rect contentRect) {
@@ -87,8 +90,10 @@ void WeReadNotesActivity::onConfirm(int index) {
       .getCount = &WeReadNotesActivity::detailItemCount,
   };
   auto handler = [this](const ActivityResult&) { requestUpdate(); };
-  startActivityForResult(
-      std::make_unique<WeReadHighlightDetailActivity>(renderer, mappedInput, bookTitle_, src, index), handler);
+  startActivityForResult(std::make_unique<WeReadHighlightDetailActivity>(renderer, mappedInput, bookTitle_, src, index),
+                         handler);
 }
 
 void WeReadNotesActivity::onBack() { finish(); }
+
+bool WeReadNotesActivity::tryLoadFromCache() { return WeReadCacheStore::loadNotes(bookId_, rows_); }

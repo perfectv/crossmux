@@ -54,8 +54,7 @@ void WeReadRecommendActivity::renderContent(Rect contentRect) {
   }
   static char subtitleBuf[100];
   GUI.drawList(
-      renderer, contentRect, static_cast<int>(rows_.size()), selected,
-      [this](int i) { return rows_[i].title; },
+      renderer, contentRect, static_cast<int>(rows_.size()), selected, [this](int i) { return rows_[i].title; },
       [this](int i) {
         const auto& r = rows_[i];
         // Prefer the recommend reason — it's the whole point of this list.

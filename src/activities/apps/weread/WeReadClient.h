@@ -18,12 +18,13 @@ class WeReadClient {
  public:
   enum class Err {
     Ok = 0,
-    NoWifi,       // WiFi.status() != WL_CONNECTED before call
-    NoApiKey,     // WeReadKeyStore returned empty
-    Http,         // TCP / TLS / non-200 HTTP
-    Parse,        // body was not valid JSON
-    Server,       // errcode != 0 in response
-    Upgrade,      // upgrade_info present — skill version mismatch
+    NoWifi,    // WiFi.status() != WL_CONNECTED before call
+    NoApiKey,  // WeReadKeyStore returned empty
+    Http,      // TCP / TLS / non-200 HTTP
+    Parse,     // body was not valid JSON
+    Server,    // errcode != 0 in response
+    Upgrade,   // upgrade_info present — skill version mismatch
+    NoCache,   // offline mode but no cached copy on SD
   };
 
   /**

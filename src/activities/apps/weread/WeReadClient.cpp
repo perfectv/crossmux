@@ -172,8 +172,8 @@ class HttpBodyStream final : public Stream {
 
 }  // namespace
 
-WeReadClient::Err WeReadClient::post(const char* apiName, JsonDocument& body, JsonDocument& outResp,
-                                     int httpTimeoutMs, const JsonDocument* filter) {
+WeReadClient::Err WeReadClient::post(const char* apiName, JsonDocument& body, JsonDocument& outResp, int httpTimeoutMs,
+                                     const JsonDocument* filter) {
   g_lastErrCode = 0;
   g_lastUpgradeMessage.clear();
 
@@ -225,8 +225,7 @@ WeReadClient::Err WeReadClient::post(const char* apiName, JsonDocument& body, Js
 
   // HTTPClient::POST(uint8_t*, size_t) is non-const; cast away to mirror its
   // signature. The buffer is not modified.
-  const int httpCode =
-      http.POST(reinterpret_cast<uint8_t*>(const_cast<char*>(payload.data())), payload.size());
+  const int httpCode = http.POST(reinterpret_cast<uint8_t*>(const_cast<char*>(payload.data())), payload.size());
   if (httpCode != HTTP_CODE_OK) {
     LOG_ERR("WEREAD", "POST %s HTTP %d", apiName, httpCode);
     http.end();
@@ -248,8 +247,8 @@ WeReadClient::Err WeReadClient::post(const char* apiName, JsonDocument& body, Js
   http.end();
 
   if (parseErr) {
-    LOG_ERR("WEREAD", "POST %s parse error: %s (contentLength=%d, filter=%d)", apiName, parseErr.c_str(),
-            contentLength, useFilter ? 1 : 0);
+    LOG_ERR("WEREAD", "POST %s parse error: %s (contentLength=%d, filter=%d)", apiName, parseErr.c_str(), contentLength,
+            useFilter ? 1 : 0);
     return Err::Parse;
   }
 
@@ -293,6 +292,8 @@ const char* WeReadClient::errorName(Err err) {
       return "Server";
     case Err::Upgrade:
       return "Upgrade";
+    case Err::NoCache:
+      return "NoCache";
   }
   return "Unknown";
 }

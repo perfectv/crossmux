@@ -8,6 +8,7 @@
 
 #include "../../../components/UITheme.h"
 #include "../../ActivityManager.h"
+#include "WeReadCacheStore.h"
 
 WeReadShelfActivity::WeReadShelfActivity(GfxRenderer& renderer, MappedInputManager& mappedInput)
     : WeReadFetchActivity("WeReadShelf", renderer, mappedInput) {}
@@ -90,6 +91,27 @@ void WeReadShelfActivity::parseResponse(JsonDocument& resp) {
   // mp 字段非空时书架顶部有一条「文章收藏」入口 — 只在统计里出现，不进列表。
   JsonVariantConst mp = resp["mp"];
   hasMpEntry_ = !mp.isNull();
+
+  // 顺便落盘:下次离线模式可直接读 SD 显示书架,无需联网。
+  WeReadCacheStore::saveShelf(books_);
+}
+
+bool WeReadShelfActivity::tryLoadFromCache() {
+  books_.clear();
+  ebookCount_ = 0;
+  albumCount_ = 0;
+  hasMpEntry_ = false;
+  if (!WeReadCacheStore::loadShelf(books_)) return false;
+  // Re-derive the counters so the subtitle shows the same numbers as a
+  // live fetch would.
+  for (const auto& b : books_) {
+    if (b.isAlbum) {
+      ++albumCount_;
+    } else {
+      ++ebookCount_;
+    }
+  }
+  return true;
 }
 
 void WeReadShelfActivity::renderContent(Rect contentRect) {
@@ -101,8 +123,8 @@ void WeReadShelfActivity::renderContent(Rect contentRect) {
 
   // Subtitle uses a static buffer so we don't allocate every redraw.
   static char subtitleBuf[64];
-  std::snprintf(subtitleBuf, sizeof(subtitleBuf), "%d · %d 有声 · %s",
-                ebookCount_, albumCount_, hasMpEntry_ ? "含文章收藏" : "无文章收藏");
+  std::snprintf(subtitleBuf, sizeof(subtitleBuf), "%d · %d 有声 · %s", ebookCount_, albumCount_,
+                hasMpEntry_ ? "含文章收藏" : "无文章收藏");
 
   GUI.drawList(
       renderer, contentRect, static_cast<int>(books_.size()), selected,
@@ -121,6 +143,11 @@ void WeReadShelfActivity::renderContent(Rect contentRect) {
         if (!b.category.empty()) {
           if (!sub.empty()) sub += " · ";
           sub += b.category;
+        }
+        // 标识此书是否已落到 SD 缓存,便于用户挑选 / 知道离线模式下哪些可读。
+        if (!b.isAlbum && WeReadCacheStore::hasBookCached(b.bookId)) {
+          if (!sub.empty()) sub += " · ";
+          sub += tr(STR_WEREAD_CACHE_BADGE);
         }
         return sub;
       });

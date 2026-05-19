@@ -26,18 +26,18 @@ struct NotebookRow {
   std::string bookId;
   std::string title;
   std::string author;
-  int reviewCount = 0;     // ideas/comments (incl. highlight thoughts)
-  int noteCount = 0;       // highlights (≈ markText entries)
-  int bookmarkCount = 0;   // bookmarks (count only — content not exportable)
+  int reviewCount = 0;    // ideas/comments (incl. highlight thoughts)
+  int noteCount = 0;      // highlights (≈ markText entries)
+  int bookmarkCount = 0;  // bookmarks (count only — content not exportable)
   int readingProgress = 0;
   uint8_t markedStatus = 0;
-  uint32_t sort = 0;       // cursor for pagination via lastSort
+  uint32_t sort = 0;  // cursor for pagination via lastSort
 };
 
 struct BookmarkRow {
   std::string bookmarkId;
   std::string markText;
-  std::string range;        // "start-end" — split for weread:// deep link
+  std::string range;  // "start-end" — split for weread:// deep link
   uint32_t chapterUid = 0;
   uint32_t createTime = 0;
 };
@@ -56,7 +56,7 @@ struct BestMarkRow {
   std::string markText;
   std::string range;
   uint32_t chapterUid = 0;
-  int totalCount = 0;        // 划线人数
+  int totalCount = 0;  // 划线人数
 };
 
 struct ChapterRow {
@@ -65,7 +65,7 @@ struct ChapterRow {
   uint32_t chapterIdx = 0;
   int wordCount = 0;
   uint8_t level = 1;
-  uint8_t paid = 1;          // 1 = free or already bought
+  uint8_t paid = 1;  // 1 = free or already bought
 };
 
 struct PublicReviewRow {
@@ -73,10 +73,10 @@ struct PublicReviewRow {
   std::string content;
   std::string authorName;
   std::string chapterName;
-  int starPercent = 0;       // raw scale: 20/40/60/80/100; 0 = no rating
+  int starPercent = 0;  // raw scale: 20/40/60/80/100; 0 = no rating
   uint8_t isFinish = 0;
   uint32_t createTime = 0;
-  int idx = 0;                // for pagination
+  int idx = 0;  // for pagination
 };
 
 struct SearchRow {
@@ -84,11 +84,11 @@ struct SearchRow {
   std::string title;
   std::string author;
   std::string category;
-  int newRating = 0;          // 0..100 (display as /10)
+  int newRating = 0;  // 0..100 (display as /10)
   int newRatingCount = 0;
   int readingCount = 0;
   uint8_t soldout = 0;
-  int searchIdx = 0;          // for maxIdx pagination
+  int searchIdx = 0;  // for maxIdx pagination
 };
 
 struct RecommendRow {
@@ -105,7 +105,7 @@ struct RecommendRow {
 struct StatsTopBook {
   std::string title;
   std::string author;
-  uint32_t readTime = 0;      // seconds
+  uint32_t readTime = 0;  // seconds
 };
 
 struct StatsSummary {
@@ -113,10 +113,10 @@ struct StatsSummary {
   uint32_t totalReadTime = 0;
   uint32_t dayAverageReadTime = 0;
   int readDays = 0;
-  int compareTenths = 0;       // signed integer percent * 10 (e.g. 207 = +20.7%)
+  int compareTenths = 0;  // signed integer percent * 10 (e.g. 207 = +20.7%)
   bool compareValid = false;
   std::vector<StatsTopBook> topBooks;
-  std::vector<std::string> readStat;   // ["读过 12本", "笔记 45条", ...]
+  std::vector<std::string> readStat;  // ["读过 12本", "笔记 45条", ...]
   std::string preferTimeWord;
   std::string preferCategoryWord;
 };
