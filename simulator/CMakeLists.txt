@@ -98,6 +98,7 @@ list(APPEND CROSSPOINT_LIB
 )
 
 set(SIMULATOR_HAL_NATIVE
+    hal_native/HalClock_native.cpp
     hal_native/HalDisplay_native.cpp
     hal_native/HalGPIO_native.cpp
     hal_native/HalPowerManager_native.cpp
