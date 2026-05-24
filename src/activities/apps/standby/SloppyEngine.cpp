@@ -92,10 +92,14 @@ inline bool clipSegmentToRect(int& x0, int& y0, int& x1, int& y1,  //
                               int xMin, int yMin, int xMax, int yMax) {
   auto outcode = [&](int x, int y) {
     int c = 0;
-    if (x < xMin) c |= 1;
-    else if (x > xMax) c |= 2;
-    if (y < yMin) c |= 4;
-    else if (y > yMax) c |= 8;
+    if (x < xMin)
+      c |= 1;
+    else if (x > xMax)
+      c |= 2;
+    if (y < yMin)
+      c |= 4;
+    else if (y > yMax)
+      c |= 8;
     return c;
   };
   int c0 = outcode(x0, y0);
@@ -171,7 +175,7 @@ inline bool clipSegmentToRect(int& x0, int& y0, int& x1, int& y1,  //
 // stamp itself paints `strokeWidth` parallel copies of the segment in a
 // width × width centered grid, giving each sample a square-pen footprint
 // (verticals get proper weight, endpoints get symmetric square caps).
-inline void drawStrokeSegment(GfxRenderer& renderer, int x0, int y0, int x1, int y1, int strokeWidth) {
+inline void drawStrokeSegment(const GfxRenderer& renderer, int x0, int y0, int x1, int y1, int strokeWidth) {
   if (renderer.getRenderMode() != GfxRenderer::BW) return;
 
   const int xMax = renderer.getScreenWidth() - 1;

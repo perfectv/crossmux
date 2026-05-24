@@ -57,9 +57,10 @@ class StandbyActivity final : public Activity {
   void pumpTimeSync();
   void finishTimeSync();
 
-  // Layer a 4-level grayscale refresh on top of the BW image just committed
-  // by displayBuffer(). No-op unless the current face's wantsGrayscale() is
-  // true and inverseMode_ is off. Called only from the Immersive branch of
-  // render() — Normal-mode renders skip it to keep navigation responsive.
-  void applyGrayscaleEnhancement(int sw, int sh);
+  // Layer a 4-level grayscale refresh on top of the BW image just committed by
+  // displayBuffer(): re-render the LSB then MSB planes and composite via the
+  // gray LUT waveform. Used by passive faces in Immersive mode (gated on
+  // wantsGrayscale, e.g. the 老黄历 calendar). The face's render() must be
+  // idempotent across the three passes.
+  void applyGrayscalePass(int sw, int sh);
 };

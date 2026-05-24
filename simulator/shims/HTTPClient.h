@@ -148,6 +148,24 @@ class HTTPClient {
   Stream* getStreamPtr() { return &getStream(); }
   int getSize() { return static_cast<int>(responseBody_.size()); }
 
+  // Drive the caller's sink with the already-downloaded body (libcurl delivered
+  // it whole during perform_). Mirrors HTTPClient::writeToStream — returns bytes
+  // written, or stops early if the sink refuses (e.g. a cancel flag). Used by
+  // HttpDownloader to stream the response into an FsFile.
+  int writeToStream(Stream* stream) {
+    if (!stream) return -1;
+    const size_t total = responseBody_.size();
+    size_t off = 0;
+    while (off < total) {
+      size_t chunk = total - off;
+      if (chunk > 4096) chunk = 4096;
+      const size_t w = stream->write(reinterpret_cast<const uint8_t*>(responseBody_.data() + off), chunk);
+      if (w == 0) break;  // sink refused (cancelled / write error)
+      off += w;
+    }
+    return static_cast<int>(off);
+  }
+
  private:
   // libcurl delivers the whole body before perform_ returns, so the
   // "stream" is just a memory cursor over responseBody_.
