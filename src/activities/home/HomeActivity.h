@@ -29,6 +29,11 @@ class HomeActivity final : public Activity {
   int coverRectH = 0;
   std::vector<RecentBook> recentBooks;
   const HomeMenuItem initialMenuItem;
+  // Only enter Standby when this activity has observed a complete press→release
+  // pair locally. Prevents a release edge that leaks across an activity switch
+  // (e.g. Back pressed in SettingsActivity, released after HomeActivity took over)
+  // from immediately punching the user into Standby.
+  bool sawBackPressInActivity = false;
 
   // Convert HomeMenuItem to menu index (used in onEnter)
   static int menuItemToIndex(HomeMenuItem item, bool hasOpdsUrl) {

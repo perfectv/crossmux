@@ -209,7 +209,11 @@ void HomeActivity::loop() {
     }
   }
 
-  if (mappedInput.wasReleased(MappedInputManager::Button::Back)) {
+  if (mappedInput.wasPressed(MappedInputManager::Button::Back)) {
+    sawBackPressInActivity = true;
+  }
+  if (sawBackPressInActivity && mappedInput.wasReleased(MappedInputManager::Button::Back)) {
+    sawBackPressInActivity = false;
     onStandbyOpen();
   }
 }
