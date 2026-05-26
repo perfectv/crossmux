@@ -1,7 +1,7 @@
 # Upstream-Merge Policy for `CLAUDE.md` / `.skills/SKILL.md`
 
 > How to resolve conflicts on the development guide when syncing upstream into
-> `crosstab`. This is the rule the daily sync routine and any human resolver must
+> `main`. This is the rule the daily sync routine and any human resolver must
 > follow. Read it whenever `.skills/SKILL.md` appears in a sync PR's conflict list.
 
 ## The structural invariant
@@ -9,7 +9,7 @@
 - `CLAUDE.md` is a **symlink** → `.skills/SKILL.md` (identical on both branches,
   so the symlink itself never conflicts). The real content lives in
   `.skills/SKILL.md`.
-- On `crosstab`, `.skills/SKILL.md` is a **thin map** (~90 lines): identity,
+- On `main`, `.skills/SKILL.md` is a **thin map** (~90 lines): identity,
   Golden Rules, a quick reference, and a topic→doc table. The deep
   firmware-engineering reference lives in [`docs/engineering/`](index.md).
 - **Upstream keeps the old monolithic version** of `.skills/SKILL.md` and keeps
@@ -17,7 +17,7 @@
   sync that touches this file produces a content conflict on `.skills/SKILL.md`.
 
 **The job is never to merge the two files line-by-line.** It is to keep
-`crosstab`'s thin map and re-home upstream's new content the same way the original
+`main`'s thin map and re-home upstream's new content the same way the original
 refactor did.
 
 ## What is "live" in the map
@@ -60,7 +60,7 @@ When a sync merge reports a conflict on `.skills/SKILL.md`:
    | A brand-new area with no home | Create `docs/engineering/<new>.md`, then add a row to the map's table **and** to [`index.md`](index.md) |
    | A change to a section still living in the map (Identity / Cognitive Rules, Quick Reference, Philosophy) | Apply it directly in `.skills/SKILL.md` |
    | Pure reword / typo fix of already-relocated content | Apply in the topic doc only |
-   | Irrelevant to `crosstab` (e.g. BLE — `crosstab` deliberately carries no BLE) | Skip it, and note the omission in the sync PR |
+   | Irrelevant to `main` (e.g. BLE — `main` deliberately carries no BLE) | Skip it, and note the omission in the sync PR |
 
 4. **Stage and finish.** `git add .skills/SKILL.md` plus every touched
    `docs/engineering/*` file, then complete the merge.

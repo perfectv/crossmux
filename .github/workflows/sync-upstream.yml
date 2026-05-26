@@ -1,11 +1,11 @@
 name: Sync upstream master
 
-# Daily: keep a standing PR that merges upstream master into crosstab.
+# Daily: keep a standing PR that merges upstream master into main.
 # - Clean merge  -> push the merge to chore/sync-upstream and open/refresh the PR.
 # - Conflicts    -> reset the branch, open/refresh the PR, label it
 #                   `needs-claude-resolution` and list the conflicted files.
 #                   The companion /schedule Claude routine resolves it later.
-# This workflow NEVER merges into crosstab — the human is always the one who
+# This workflow NEVER merges into main — the human is always the one who
 # clicks merge on the PR.
 
 on:
@@ -24,7 +24,7 @@ concurrency:
 
 env:
   UPSTREAM_URL: https://github.com/crosspoint-reader/crosspoint-reader.git
-  BASE: crosstab
+  BASE: main
   SYNC_BRANCH: chore/sync-upstream
   LABEL: needs-claude-resolution
 
@@ -32,10 +32,10 @@ jobs:
   sync:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout crosstab
+      - name: Checkout main
         uses: actions/checkout@v6
         with:
-          ref: crosstab
+          ref: main
           fetch-depth: 0
           submodules: false   # tree-level merge only; submodule contents not needed
 
@@ -73,7 +73,7 @@ jobs:
             fi
           fi
 
-          # 3. Rebuild the sync branch from crosstab and attempt the merge.
+          # 3. Rebuild the sync branch from main and attempt the merge.
           git checkout -B "$SYNC_BRANCH" "origin/${BASE}"
 
           ensure_label() {
@@ -112,7 +112,7 @@ jobs:
             echo "Merge conflicts detected."
             conflicts="$(git diff --name-only --diff-filter=U)"
             git merge --abort
-            # Reset branch to crosstab so the PR exists as a target for the resolver.
+            # Reset branch to main so the PR exists as a target for the resolver.
             git push --force origin "HEAD:${SYNC_BRANCH}"
             ensure_label
             pr="$(ensure_pr)"
@@ -126,7 +126,7 @@ jobs:
               echo '```'
               if printf '%s\n' "$conflicts" | grep -qx '.skills/SKILL.md'; then
                 echo ""
-                echo "⚠️ \`.skills/SKILL.md\` (= \`CLAUDE.md\`) conflicted. Resolve it per **\`docs/engineering/upstream-merge-policy.md\`**: keep crosstab's thin map and route the upstream delta into \`docs/engineering/\` — do NOT merge the monolith back into the map."
+                echo "⚠️ \`.skills/SKILL.md\` (= \`CLAUDE.md\`) conflicted. Resolve it per **\`docs/engineering/upstream-merge-policy.md\`**: keep main's thin map and route the upstream delta into \`docs/engineering/\` — do NOT merge the monolith back into the map."
               fi
             } | gh pr comment "$pr" --body-file -
             echo "PR #${pr} flagged for resolution."
