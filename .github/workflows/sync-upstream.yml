@@ -127,6 +127,15 @@ jobs:
               git update-index --cacheinfo "160000,$(git rev-parse MERGE_HEAD:open-x4-sdk),open-x4-sdk"
             fi
             git add -A -- . ':(exclude)open-x4-sdk'
+            # The default GITHUB_TOKEN cannot push a commit that creates or updates any
+            # .github/workflows/* file ("without `workflows` permission"). This
+            # placeholder only needs to exist as a target for the resolver routine —
+            # which force-pushes the real, fully-merged result with a workflow-scoped
+            # PAT — so strip workflow changes from it: force the index copy of
+            # .github/workflows to match ours (HEAD) exactly, dropping any upstream
+            # additions or modifications.
+            git rm -r -q --cached --ignore-unmatch -- .github/workflows >/dev/null 2>&1 || true
+            git checkout HEAD -- .github/workflows 2>/dev/null || true
             git commit -m "chore: WIP merge upstream master (conflicts pending resolution)"
             git push --force origin "$SYNC_BRANCH"
             ensure_label
