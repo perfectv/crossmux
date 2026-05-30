@@ -111,9 +111,16 @@ jobs:
           else
             echo "Merge conflicts detected."
             conflicts="$(git diff --name-only --diff-filter=U)"
-            git merge --abort
-            # Reset branch to main so the PR exists as a target for the resolver.
-            git push --force origin "HEAD:${SYNC_BRANCH}"
+            # Seal the conflicted merge (markers stay in the tree) so the sync branch
+            # has a real diff vs main; otherwise `gh pr create` rejects an empty PR and
+            # no sync PR can ever be opened when there are conflicts (which is every
+            # sync, since .skills/SKILL.md always conflicts). The Claude routine
+            # re-merges from scratch and force-pushes the clean resolution — this commit
+            # is just a placeholder + a conflict record for the resolver to target.
+            git checkout --theirs -- open-x4-sdk 2>/dev/null || true  # placeholder submodule ptr; routine sets the final one
+            git add -A
+            git commit -m "chore: WIP merge upstream master (conflicts pending resolution)"
+            git push --force origin "$SYNC_BRANCH"
             ensure_label
             pr="$(ensure_pr)"
             gh pr edit "$pr" --add-label "$LABEL"
