@@ -17,9 +17,11 @@
 #include <string>
 
 namespace {
-// OTA manifest endpoint on crossmux.com. The web proxy picks the right
-// release asset for this build's variant (firmware.bin for the global build,
-// firmware-cn.bin for ENABLE_CHINESE_VERSION) and re-exposes it as a minimal
+// OTA manifest endpoint. The global build uses crossmux.com; the Chinese build
+// (ENABLE_CHINESE_VERSION) uses crossmux.yunhug.com, the yunhug-hosted domain
+// with a more reliable mainland-China path. Either way the web proxy picks the
+// right release asset for this build's variant (firmware.bin for the global
+// build, firmware-cn.bin for the Chinese build) and re-exposes it as a minimal
 // GitHub-release-shaped JSON whose single asset is always named
 // "firmware.bin" — that's the literal ReleaseJsonParser matches on.
 //
@@ -28,7 +30,7 @@ namespace {
 // path to api.github.com.
 constexpr char latestReleaseUrl[] =
 #ifdef ENABLE_CHINESE_VERSION
-    "https://crossmux.com/api/ota/manifest?variant=cn";
+    "https://crossmux.yunhug.com/api/ota/manifest?variant=cn";
 #else
     "https://crossmux.com/api/ota/manifest?variant=global";
 #endif
