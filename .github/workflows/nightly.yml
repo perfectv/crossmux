@@ -65,3 +65,21 @@ jobs:
             Rolling nightly build from `main` (${{ env.SHORT_SHA }}).
             - `firmware.bin` — international
             - `firmware-cn.bin` — Chinese (中文)
+
+      # Roll the same nightly binaries onto Gitee for the China mirror. The
+      # script deletes the previous Gitee `nightly` release and recreates it.
+      # Best-effort: never blocks the GitHub nightly. Needs the GITEE_TOKEN secret.
+      - name: Mirror nightly to Gitee (China)
+        continue-on-error: true
+        env:
+          GITEE_TOKEN: ${{ secrets.GITEE_TOKEN }}
+        run: |
+          printf '%s\n' "Rolling nightly build from main (${{ env.SHORT_SHA }})." > gitee-nightly-body.md
+          bash scripts/publish-gitee-release.sh \
+            "x1abin/crossmux" \
+            "nightly" \
+            "CrossMux Nightly (${{ env.SHORT_SHA }})" \
+            "true" \
+            "${{ github.sha }}" \
+            "gitee-nightly-body.md" \
+            dist/firmware.bin dist/firmware-cn.bin
