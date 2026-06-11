@@ -7,6 +7,8 @@
 
 #include <cstring>
 
+uint8_t TextBlock::fakeBold = 0;
+
 void TextBlock::render(const GfxRenderer& renderer, const int fontId, const int x, const int y) const {
   // Focus annotations are optional: empty vectors mean no word in this block has a split.
   // When present, they must be sized in lockstep with words[].
@@ -56,7 +58,25 @@ void TextBlock::render(const GfxRenderer& renderer, const int fontId, const int 
       const int suffixX = wordX + wordFocusSuffixX[i];
       renderer.drawText(fontId, suffixX, wordY, words[i].c_str() + boldLen, true, currentStyle, baseDir);
     } else {
-      renderer.drawText(fontId, wordX, wordY, words[i].c_str(), true, currentStyle, baseDir);
+      // ====== FAKE BOLD 注入点 ======
+      if (fakeBold && (currentStyle & EpdFontFamily::BOLD) != 0) {
+        // 把 BOLD/BOLD_ITALIC 降级为对应的 non-bold style 来做多遍偏移绘制
+        auto fbStyle = static_cast<EpdFontFamily::Style>(currentStyle & ~EpdFontFamily::BOLD);
+        // fbStyle 现在可能是 REGULAR(0) 或 ITALIC(1)
+        if (fakeBold >= 2) {
+          // Extra Bold: 3-pass at x-1, x, x+1
+          renderer.drawText(fontId, wordX - 1, wordY, words[i].c_str(), true, fbStyle, baseDir);
+          renderer.drawText(fontId, wordX,     wordY, words[i].c_str(), true, fbStyle, baseDir);
+          renderer.drawText(fontId, wordX + 1, wordY, words[i].c_str(), true, fbStyle, baseDir);
+        } else {
+          // Bold: 2-pass at x, x+1
+          renderer.drawText(fontId, wordX,     wordY, words[i].c_str(), true, fbStyle, baseDir);
+          renderer.drawText(fontId, wordX + 1, wordY, words[i].c_str(), true, fbStyle, baseDir);
+        }
+      } else {
+        // 原始路径（无 fakeBold）
+        renderer.drawText(fontId, wordX, wordY, words[i].c_str(), true, currentStyle, baseDir);
+      }
     }
 
     if (!scanning && (currentStyle & EpdFontFamily::UNDERLINE) != 0) {

@@ -688,7 +688,7 @@ Rect BaseTheme::drawPopup(const GfxRenderer& renderer, const char* message) cons
   if (useRoundedPopup) {
     renderer.fillRoundedRect(x - frameThickness, y - frameThickness, w + frameThickness * 2, h + frameThickness * 2,
                              metrics.popupCornerRadius + frameThickness, Color::White);
-    renderer.fillRoundedRect(x, y, w, h, metrics.popupCornerRadius, Color::Black);
+    renderer.fillRoundedRect(x, y, w, h, metrics.popupCornerRadius, Color::Black); 
   } else {
     renderer.fillRect(x - frameThickness, y - frameThickness, w + frameThickness * 2, h + frameThickness * 2, true);
     renderer.fillRect(x, y, w, h, false);
@@ -701,6 +701,59 @@ Rect BaseTheme::drawPopup(const GfxRenderer& renderer, const char* message) cons
   return Rect{x, y, w, h};
 }
 
+// ============================================================================
+// Indexing Popup – 索引中专用弹窗
+// ----------------------------------------------------------------------------
+// 该弹窗仅用于 EPUB / TXT 建立索引时显示，不影响通用 drawPopup 样式。
+// 特点：
+// - 固定在屏幕底部
+// - 白色圆角背景
+// - 黑色常规字体
+// - 立即刷新显示（displayBuffer）
+// ============================================================================
+Rect BaseTheme::drawIndexingPopup(const GfxRenderer& renderer) const {
+  // 国际化文本：“索引中”
+  const char* message = tr(STR_INDEXING);
+
+  // -------------------------
+  // 样式参数（可集中调整）
+  // -------------------------
+  constexpr int barHeight   = 20;     // 弹窗高度
+  constexpr int paddingX    = 8;     // 左右内边距
+  constexpr int cornerRadius = 4;    // 圆角半径（建议 ≈ barHeight / 2）
+  constexpr int bottomMargin = 5;    // 距离屏幕底部距离
+
+  // 计算文本尺寸（使用 UI_12 常规字体）
+  const int textWidth  = renderer.getTextWidth(UI_12_FONT_ID, message, EpdFontFamily::REGULAR);
+  const int textHeight = renderer.getLineHeight(UI_12_FONT_ID);
+
+  // 弹窗总宽度 = 文本宽度 + 两侧内边距
+  const int barWidth = textWidth + paddingX * 2;
+
+  // 屏幕尺寸
+  const int screenWidth  = renderer.getScreenWidth();
+  const int screenHeight = renderer.getScreenHeight();
+
+  // 水平居中，垂直固定于底部
+  const int x = (screenWidth - barWidth) / 2;
+  const int y = screenHeight - barHeight - bottomMargin;
+
+  // 绘制白色圆角背景（无边框）
+  renderer.fillRoundedRect(x, y, barWidth, barHeight, cornerRadius, Color::White);
+
+  // 文本水平居中、垂直居中
+  const int textX = x + (barWidth - textWidth) / 2 - 4; //-2是为了纠偏，不减会显得偏右边。
+  const int textY = y + (barHeight - textHeight) / 2;
+
+  // 绘制黑色常规字体（true为黑字）
+  renderer.drawText(UI_12_FONT_ID, textX, textY, message, true, EpdFontFamily::REGULAR);
+
+  // 立即刷新屏幕，确保用户第一时间看到“索引中”
+  renderer.displayBuffer();
+
+  // 返回弹窗区域（供调用方做局部刷新 / 碰撞检测）
+  return Rect{x, y, barWidth, barHeight};
+}
 void BaseTheme::fillPopupProgress(const GfxRenderer& renderer, const Rect& layout, const int progress) const {
   const auto& metrics = UITheme::getInstance().getMetrics();
   const int barHeight = metrics.popupProgressBarHeight;

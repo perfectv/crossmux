@@ -147,8 +147,8 @@ constexpr ThemeMetrics values = {.batteryWidth = 15,
                                  .scrollBarWidth = 4,
                                  .scrollBarRightOffset = 5,
                                  .homeTopPadding = 40,
-                                 .homeCoverHeight = 400,
-                                 .homeCoverTileHeight = 400,
+                                 .homeCoverHeight = 300, 
+                                 .homeCoverTileHeight = 300,
                                  .homeRecentBooksCount = 1,
                                  .homeContinueReadingInMenu = false,
                                  .homeMenuTopOffset = 10,
@@ -181,7 +181,7 @@ constexpr ThemeMetrics values = {.batteryWidth = 15,
                                  .popupFrameThickness = 2,
                                  .popupCornerRadius = 0,
                                  .popupTextBold = true,
-                                 .popupTextInverted = true,
+                                 .popupTextInverted = true, // true表示白底黑字
                                  .popupTextBaselineOffsetY = -2,
                                  .popupProgressBarHeight = 4,
                                  .popupProgressDrawOutline = false,
@@ -229,7 +229,8 @@ class BaseTheme {
   virtual void drawButtonMenu(GfxRenderer& renderer, Rect rect, int buttonCount, int selectedIndex,
                               const std::function<std::string(int index)>& buttonLabel,
                               const std::function<UIIcon(int index)>& rowIcon, int rowSpacing = -1) const;
-  virtual Rect drawPopup(const GfxRenderer& renderer, const char* message) const;
+  virtual Rect drawPopup(const GfxRenderer& renderer, const char* message) const; //原有弹窗
+  virtual Rect drawIndexingPopup(const GfxRenderer& renderer) const;  // 新增：索引中专用弹窗
   virtual void fillPopupProgress(const GfxRenderer& renderer, const Rect& layout, const int progress) const;
   void drawStatusBar(GfxRenderer& renderer, const float bookProgress, const int currentPage, const int pageCount,
                      std::string title, const int paddingBottom = 0, const int textYOffset = 0,

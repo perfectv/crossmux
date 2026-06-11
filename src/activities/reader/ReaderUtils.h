@@ -97,5 +97,4 @@ void renderAntiAliased(GfxRenderer& renderer, RenderFn&& renderFn) {
 
   renderer.restoreBwBuffer();
 }
-
 }  // namespace ReaderUtils

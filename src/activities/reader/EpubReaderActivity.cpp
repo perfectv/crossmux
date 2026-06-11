@@ -803,9 +803,9 @@ void EpubReaderActivity::render(RenderLock&& lock) {
                                   SETTINGS.imageRendering, SETTINGS.focusReadingEnabled)) {
       LOG_DBG("ERS", "Cache not found, building...");
 
-      GUI.drawPopup(renderer, tr(STR_INDEXING));
+      GUI.drawIndexingPopup(renderer);//原为GUI.drawPopup(renderer, tr(STR_INDEXING));
 
-      const auto popupFn = [this]() { GUI.drawPopup(renderer, tr(STR_INDEXING)); };
+      const auto popupFn = [this]() { GUI.drawIndexingPopup(renderer); }; //原为GUI.drawPopup(renderer, tr(STR_INDEXING))；现改为专用的弹窗样式，避免遮挡。
 
       if (!section->createSectionFile(SETTINGS.getReaderFontId(), SETTINGS.getReaderLineCompression(),
                                       SETTINGS.extraParagraphSpacing, SETTINGS.paragraphAlignment, viewportWidth,
@@ -955,7 +955,7 @@ void EpubReaderActivity::silentIndexNextChapterIfNeeded(const uint16_t viewportW
   // so a small next chapter still builds silently, while a large one — which would
   // otherwise block the render thread for seconds with no feedback right after the
   // penultimate page appears — now shows "INDEXING" instead of looking like a hang.
-  const auto popupFn = [this]() { GUI.drawPopup(renderer, tr(STR_INDEXING)); };
+  const auto popupFn = [this]() { GUI.drawIndexingPopup(renderer); };// 改成专属索引中的弹窗
   if (!nextSection.createSectionFile(SETTINGS.getReaderFontId(), SETTINGS.getReaderLineCompression(),
                                      SETTINGS.extraParagraphSpacing, SETTINGS.paragraphAlignment, viewportWidth,
                                      viewportHeight, SETTINGS.hyphenationEnabled, SETTINGS.embeddedStyle,
@@ -984,6 +984,7 @@ void EpubReaderActivity::renderContents(std::unique_ptr<Page> page, const int or
   // Font prewarm: scan pass accumulates text, then prewarm, then real render
   auto* fcm = renderer.getFontCacheManager();
   auto scope = fcm->createPrewarmScope();
+  TextBlock::fakeBold = SETTINGS.fakeBold;   // 新增：渲染前设置 Fake Bold 状态
   page->render(renderer, SETTINGS.getReaderFontId(), orientedMarginLeft, orientedMarginTop);  // scan pass
   scope.endScanAndPrewarm();
   const auto tPrewarm = millis();
