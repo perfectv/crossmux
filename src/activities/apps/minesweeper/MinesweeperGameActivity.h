@@ -41,7 +41,7 @@ class MinesweeperGameActivity final : public Activity {
   static constexpr uint8_t MENU_ITEM_COUNT = 7;
 
   // 长按光标移动
-  static constexpr uint32_t kInitialHoldDelayMs = 500;   // 0.5 秒后开始连续移动
+  static constexpr uint32_t kInitialHoldDelayMs = 500;    // 0.5 秒后开始连续移动
   static constexpr uint32_t kRepeatMoveIntervalMs = 500;  // 每 0.5 秒一格
 
   struct DirectionState {

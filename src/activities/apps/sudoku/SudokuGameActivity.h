@@ -78,7 +78,7 @@ class SudokuGameActivity final : public Activity {
   static constexpr uint8_t MENU_ITEM_COUNT = 7;
 
   // 增加长按连续跳格
-  static constexpr uint32_t kInitialHoldDelayMs = 500;   // 首次长按延迟（500ms）
+  static constexpr uint32_t kInitialHoldDelayMs = 500;    // 首次长按延迟（500ms）
   static constexpr uint32_t kRepeatMoveIntervalMs = 500;  // 连续移动间隔（500ms）
   uint32_t lastCursorMoveTime = 0;
   bool isFirstMoveAfterHold = false;  // 标记是否是长按后的第一次移动
