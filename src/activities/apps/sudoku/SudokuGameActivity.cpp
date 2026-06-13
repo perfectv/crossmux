@@ -322,20 +322,75 @@ void SudokuGameActivity::handleInputPlaying() {
       requestUpdate();
     }
   } else {
-    // 调色板焦点逻辑（保持不变）
+    // ===== 调色板焦点逻辑（支持长按）=====
+    const uint32_t now = millis();
+
+    // 上键
     if (mappedInput.wasPressed(MappedInputManager::Button::Up)) {
       movePalette(-1, 0);
       requestUpdate();
-    } else if (mappedInput.wasPressed(MappedInputManager::Button::Down)) {
+      lastCursorMoveTime = now;
+      isFirstMoveAfterHold = true;
+    } else if (mappedInput.isHeld(MappedInputManager::Button::Up)) {
+      uint32_t delay = isFirstMoveAfterHold ? kInitialHoldDelayMs : kRepeatMoveIntervalMs;
+      if (now - lastCursorMoveTime >= delay) {
+        movePalette(-1, 0);
+        requestUpdate();
+        lastCursorMoveTime = now;
+        isFirstMoveAfterHold = false;
+      }
+    }
+
+    // 下键
+    if (mappedInput.wasPressed(MappedInputManager::Button::Down)) {
       movePalette(1, 0);
       requestUpdate();
-    } else if (mappedInput.wasPressed(MappedInputManager::Button::Left)) {
+      lastCursorMoveTime = now;
+      isFirstMoveAfterHold = true;
+    } else if (mappedInput.isHeld(MappedInputManager::Button::Down)) {
+      uint32_t delay = isFirstMoveAfterHold ? kInitialHoldDelayMs : kRepeatMoveIntervalMs;
+      if (now - lastCursorMoveTime >= delay) {
+        movePalette(1, 0);
+        requestUpdate();
+        lastCursorMoveTime = now;
+        isFirstMoveAfterHold = false;
+      }
+    }
+
+    // 左键
+    if (mappedInput.wasPressed(MappedInputManager::Button::Left)) {
       movePalette(0, -1);
       requestUpdate();
-    } else if (mappedInput.wasPressed(MappedInputManager::Button::Right)) {
+      lastCursorMoveTime = now;
+      isFirstMoveAfterHold = true;
+    } else if (mappedInput.isHeld(MappedInputManager::Button::Left)) {
+      uint32_t delay = isFirstMoveAfterHold ? kInitialHoldDelayMs : kRepeatMoveIntervalMs;
+      if (now - lastCursorMoveTime >= delay) {
+        movePalette(0, -1);
+        requestUpdate();
+        lastCursorMoveTime = now;
+        isFirstMoveAfterHold = false;
+      }
+    }
+
+    // 右键
+    if (mappedInput.wasPressed(MappedInputManager::Button::Right)) {
       movePalette(0, 1);
       requestUpdate();
-    } else if (mappedInput.wasReleased(MappedInputManager::Button::Confirm)) {
+      lastCursorMoveTime = now;
+      isFirstMoveAfterHold = true;
+    } else if (mappedInput.isHeld(MappedInputManager::Button::Right)) {
+      uint32_t delay = isFirstMoveAfterHold ? kInitialHoldDelayMs : kRepeatMoveIntervalMs;
+      if (now - lastCursorMoveTime >= delay) {
+        movePalette(0, 1);
+        requestUpdate();
+        lastCursorMoveTime = now;
+        isFirstMoveAfterHold = false;
+      }
+    }
+
+    // 确认 / 返回键
+    if (mappedInput.wasReleased(MappedInputManager::Button::Confirm)) {
       exitPaletteFocus(true);
       requestUpdate();
     } else if (mappedInput.wasReleased(MappedInputManager::Button::Back)) {
