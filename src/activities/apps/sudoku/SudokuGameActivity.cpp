@@ -214,21 +214,105 @@ void SudokuGameActivity::resetGame() {
 }
 
 void SudokuGameActivity::handleInputPlaying() {
+  const uint32_t now = millis();
+  
   if (focus == Focus::Grid) {
+    // ===== 上键 =====
     if (mappedInput.wasPressed(MappedInputManager::Button::Up)) {
       moveCursor(-1, 0);
       requestUpdate();
-    } else if (mappedInput.wasPressed(MappedInputManager::Button::Down)) {
+      lastCursorMoveTime = now;
+      isFirstMoveAfterHold = true;  // 标记为首次移动
+    } else if (mappedInput.isHeld(MappedInputManager::Button::Up)) {
+      if (isFirstMoveAfterHold) {
+        // 首次长按：等待初始延迟
+        if (now - lastCursorMoveTime >= kInitialHoldDelayMs) {
+          moveCursor(-1, 0);
+          requestUpdate();
+          lastCursorMoveTime = now;
+          isFirstMoveAfterHold = false;  // 不再是首次移动
+        }
+      } else {
+        // 后续连续移动：使用较短间隔
+        if (now - lastCursorMoveTime >= kRepeatMoveIntervalMs) {
+          moveCursor(-1, 0);
+          requestUpdate();
+          lastCursorMoveTime = now;
+        }
+      }
+    }
+
+    // ===== 下键 =====
+    if (mappedInput.wasPressed(MappedInputManager::Button::Down)) {
       moveCursor(1, 0);
       requestUpdate();
-    } else if (mappedInput.wasPressed(MappedInputManager::Button::Left)) {
+      lastCursorMoveTime = now;
+      isFirstMoveAfterHold = true;
+    } else if (mappedInput.isHeld(MappedInputManager::Button::Down)) {
+      if (isFirstMoveAfterHold) {
+        if (now - lastCursorMoveTime >= kInitialHoldDelayMs) {
+          moveCursor(1, 0);
+          requestUpdate();
+          lastCursorMoveTime = now;
+          isFirstMoveAfterHold = false;
+        }
+      } else {
+        if (now - lastCursorMoveTime >= kRepeatMoveIntervalMs) {
+          moveCursor(1, 0);
+          requestUpdate();
+          lastCursorMoveTime = now;
+        }
+      }
+    }
+
+    // ===== 左键 =====
+    if (mappedInput.wasPressed(MappedInputManager::Button::Left)) {
       moveCursor(0, -1);
       requestUpdate();
-    } else if (mappedInput.wasPressed(MappedInputManager::Button::Right)) {
+      lastCursorMoveTime = now;
+      isFirstMoveAfterHold = true;
+    } else if (mappedInput.isHeld(MappedInputManager::Button::Left)) {
+      if (isFirstMoveAfterHold) {
+        if (now - lastCursorMoveTime >= kInitialHoldDelayMs) {
+          moveCursor(0, -1);
+          requestUpdate();
+          lastCursorMoveTime = now;
+          isFirstMoveAfterHold = false;
+        }
+      } else {
+        if (now - lastCursorMoveTime >= kRepeatMoveIntervalMs) {
+          moveCursor(0, -1);
+          requestUpdate();
+          lastCursorMoveTime = now;
+        }
+      }
+    }
+
+    // ===== 右键 =====
+    if (mappedInput.wasPressed(MappedInputManager::Button::Right)) {
       moveCursor(0, 1);
       requestUpdate();
-    } else if (mappedInput.wasReleased(MappedInputManager::Button::Confirm)) {
-      // Confirm on a fixed cell does nothing; otherwise enter palette focus.
+      lastCursorMoveTime = now;
+      isFirstMoveAfterHold = true;
+    } else if (mappedInput.isHeld(MappedInputManager::Button::Right)) {
+      if (isFirstMoveAfterHold) {
+        if (now - lastCursorMoveTime >= kInitialHoldDelayMs) {
+          moveCursor(0, 1);
+          requestUpdate();
+          lastCursorMoveTime = now;
+          isFirstMoveAfterHold = false;
+        }
+      } else {
+        if (now - lastCursorMoveTime >= kRepeatMoveIntervalMs) {
+          moveCursor(0, 1);
+          requestUpdate();
+          lastCursorMoveTime = now;
+        }
+      }
+    }
+
+    // 确认/返回键（保持不变）
+    if (mappedInput.wasReleased(MappedInputManager::Button::Confirm)) {
       if (!board.isFixed(cursorR, cursorC)) {
         enterPaletteFocus();
         requestUpdate();
@@ -238,7 +322,7 @@ void SudokuGameActivity::handleInputPlaying() {
       requestUpdate();
     }
   } else {
-    // Palette focus
+    // 调色板焦点逻辑（保持不变）
     if (mappedInput.wasPressed(MappedInputManager::Button::Up)) {
       movePalette(-1, 0);
       requestUpdate();
@@ -401,7 +485,7 @@ void SudokuGameActivity::renderGenerating() {
   drawTitleBar();
   const int h = renderer.getScreenHeight();
   renderer.drawCenteredText(NOTOSANS_16_FONT_ID, h / 2 - 16, tr(STR_SUDOKU_GENERATING));
-  renderer.drawCenteredText(kStatusFont, h / 2 + 14, tr(STR_SUDOKU_GENERATING_HINT));
+  renderer.drawCenteredText(kStatusFont, h / 2 + 28, tr(STR_SUDOKU_GENERATING_HINT));
 }
 
 void SudokuGameActivity::renderPlaying() {
@@ -598,7 +682,7 @@ void SudokuGameActivity::renderWon() {
   const int diffIdx = static_cast<int>(difficulty);
   const SudokuStats stats = SudokuStore::loadStats();
   const int statsY = titleY + 100;
-  constexpr int statsH = 80;
+  constexpr int statsH = 100; //80
   const int sx = CONTENT_X;
   const int sw2 = sw - 2 * CONTENT_X;
   const int colW = sw2 / 3;
@@ -610,8 +694,8 @@ void SudokuGameActivity::renderWon() {
     const int cx = sx + col * colW;
     const int valW = renderer.getTextWidth(kStatValueFont, value);
     const int labW = renderer.getTextWidth(kStatusFont, label);
-    renderer.drawText(kStatValueFont, cx + (colW - valW) / 2, statsY + 28, value, true);
-    renderer.drawText(kStatusFont, cx + (colW - labW) / 2, statsY + 56, label, true);
+    renderer.drawText(kStatValueFont, cx + (colW - valW) / 2, statsY + 20, value, true);
+    renderer.drawText(kStatusFont, cx + (colW - labW) / 2, statsY + 52, label, true);
   };
 
   // Col 0: time.

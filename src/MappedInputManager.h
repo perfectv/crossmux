@@ -12,6 +12,7 @@ class MappedInputManager {
     const char* btn3;
     const char* btn4;
   };
+  
 
   explicit MappedInputManager(HalGPIO& gpio) : gpio(gpio) {}
 
@@ -19,6 +20,7 @@ class MappedInputManager {
   bool wasPressed(Button button) const;
   bool wasReleased(Button button) const;
   bool isPressed(Button button) const;
+  bool isHeld(Button button) const;  //添加这一行
   bool wasAnyPressed() const;
   bool wasAnyReleased() const;
   unsigned long getHeldTime() const;

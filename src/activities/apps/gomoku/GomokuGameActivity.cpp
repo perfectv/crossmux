@@ -160,19 +160,36 @@ void GomokuGameActivity::coordToText(uint8_t r, uint8_t c, char* out, size_t out
 // ---------- Input ----------
 
 void GomokuGameActivity::handleInputPlaying() {
-  if (mappedInput.wasPressed(MappedInputManager::Button::Up)) {
-    moveCursor(-1, 0);
-    requestUpdate();
-  } else if (mappedInput.wasPressed(MappedInputManager::Button::Down)) {
-    moveCursor(1, 0);
-    requestUpdate();
-  } else if (mappedInput.wasPressed(MappedInputManager::Button::Left)) {
-    moveCursor(0, -1);
-    requestUpdate();
-  } else if (mappedInput.wasPressed(MappedInputManager::Button::Right)) {
-    moveCursor(0, 1);
-    requestUpdate();
-  } else if (mappedInput.wasReleased(MappedInputManager::Button::Confirm)) {
+  const uint32_t now = millis();
+
+  // 辅助函数：处理单个方向
+  auto handleDir = [&](MappedInputManager::Button btn,
+                       DirectionState& state,
+                       int dr, int dc) {
+    if (mappedInput.wasPressed(btn)) {
+      moveCursor(dr, dc);
+      requestUpdate();
+      state.lastMoveTime = now;
+      state.isFirstMove = true;
+    } else if (mappedInput.isHeld(btn)) {
+      uint32_t delay =
+          state.isFirstMove ? kInitialHoldDelayMs : kRepeatMoveIntervalMs;
+      if (now - state.lastMoveTime >= delay) {
+        moveCursor(dr, dc);
+        requestUpdate();
+        state.lastMoveTime = now;
+        state.isFirstMove = false;
+      }
+    }
+  };
+
+  handleDir(MappedInputManager::Button::Up,    upState, -1, 0);
+  handleDir(MappedInputManager::Button::Down,  downState, 1, 0);
+  handleDir(MappedInputManager::Button::Left, leftState, 0, -1);
+  handleDir(MappedInputManager::Button::Right, rightState, 0, 1);
+
+  // 确认 / 返回键（保持不变）
+  if (mappedInput.wasReleased(MappedInputManager::Button::Confirm)) {
     doPlace();
     requestUpdate();
   } else if (mappedInput.wasReleased(MappedInputManager::Button::Back)) {
