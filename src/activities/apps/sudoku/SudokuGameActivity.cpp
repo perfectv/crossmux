@@ -215,7 +215,7 @@ void SudokuGameActivity::resetGame() {
 
 void SudokuGameActivity::handleInputPlaying() {
   const uint32_t now = millis();
-  
+
   if (focus == Focus::Grid) {
     // ===== 上键 =====
     if (mappedInput.wasPressed(MappedInputManager::Button::Up)) {
@@ -682,7 +682,7 @@ void SudokuGameActivity::renderWon() {
   const int diffIdx = static_cast<int>(difficulty);
   const SudokuStats stats = SudokuStore::loadStats();
   const int statsY = titleY + 100;
-  constexpr int statsH = 100; //80
+  constexpr int statsH = 100;  // 80
   const int sx = CONTENT_X;
   const int sw2 = sw - 2 * CONTENT_X;
   const int colW = sw2 / 3;

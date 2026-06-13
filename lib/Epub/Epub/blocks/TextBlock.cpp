@@ -66,11 +66,11 @@ void TextBlock::render(const GfxRenderer& renderer, const int fontId, const int 
         if (fakeBold >= 2) {
           // Extra Bold: 3-pass at x-1, x, x+1
           renderer.drawText(fontId, wordX - 1, wordY, words[i].c_str(), true, fbStyle, baseDir);
-          renderer.drawText(fontId, wordX,     wordY, words[i].c_str(), true, fbStyle, baseDir);
+          renderer.drawText(fontId, wordX, wordY, words[i].c_str(), true, fbStyle, baseDir);
           renderer.drawText(fontId, wordX + 1, wordY, words[i].c_str(), true, fbStyle, baseDir);
         } else {
           // Bold: 2-pass at x, x+1
-          renderer.drawText(fontId, wordX,     wordY, words[i].c_str(), true, fbStyle, baseDir);
+          renderer.drawText(fontId, wordX, wordY, words[i].c_str(), true, fbStyle, baseDir);
           renderer.drawText(fontId, wordX + 1, wordY, words[i].c_str(), true, fbStyle, baseDir);
         }
       } else {

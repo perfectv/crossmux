@@ -253,17 +253,14 @@ void MinesweeperGameActivity::handleInputPlaying() {
   const uint32_t now = millis();
 
   // 辅助函数：处理单个方向
-  auto handleDir = [&](MappedInputManager::Button btn,
-                       DirectionState& state,
-                       int dr, int dc) {
+  auto handleDir = [&](MappedInputManager::Button btn, DirectionState& state, int dr, int dc) {
     if (mappedInput.wasPressed(btn)) {
       moveCursor(dr, dc);
       requestUpdate();
       state.lastMoveTime = now;
       state.isFirstMove = true;
     } else if (mappedInput.isHeld(btn)) {
-      uint32_t delay =
-          state.isFirstMove ? kInitialHoldDelayMs : kRepeatMoveIntervalMs;
+      uint32_t delay = state.isFirstMove ? kInitialHoldDelayMs : kRepeatMoveIntervalMs;
       if (now - state.lastMoveTime >= delay) {
         moveCursor(dr, dc);
         requestUpdate();
@@ -273,8 +270,8 @@ void MinesweeperGameActivity::handleInputPlaying() {
     }
   };
 
-  handleDir(MappedInputManager::Button::Up,    upState, -1, 0);
-  handleDir(MappedInputManager::Button::Down,  downState, 1, 0);
+  handleDir(MappedInputManager::Button::Up, upState, -1, 0);
+  handleDir(MappedInputManager::Button::Down, downState, 1, 0);
   handleDir(MappedInputManager::Button::Left, leftState, 0, -1);
   handleDir(MappedInputManager::Button::Right, rightState, 0, 1);
 

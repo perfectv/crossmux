@@ -61,7 +61,7 @@ class ChineseChessGameActivity final : public Activity {
   uint8_t menuSel = 0;
 
   // 长按光标移动
-  static constexpr uint32_t kInitialHoldDelayMs = 1000;  // 1 秒后开始连续移动
+  static constexpr uint32_t kInitialHoldDelayMs = 1000;   // 1 秒后开始连续移动
   static constexpr uint32_t kRepeatMoveIntervalMs = 500;  // 每 0.5 秒一格
 
   struct DirectionState {

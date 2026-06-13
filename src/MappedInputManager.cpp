@@ -63,9 +63,7 @@ bool MappedInputManager::isPressed(const Button button) const { return mapButton
 bool MappedInputManager::wasAnyPressed() const { return gpio.wasAnyPressed(); }
 
 bool MappedInputManager::wasAnyReleased() const { return gpio.wasAnyReleased(); }
-bool MappedInputManager::isHeld(Button button) const {
-  return isPressed(button);
-} //长按
+bool MappedInputManager::isHeld(Button button) const { return isPressed(button); }  // 长按
 
 unsigned long MappedInputManager::getHeldTime() const { return gpio.getHeldTime(); }
 
