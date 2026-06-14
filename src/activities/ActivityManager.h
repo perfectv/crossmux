@@ -99,6 +99,7 @@ class ActivityManager {
   void goToCellular();
   void goToStandby();
   void goToGame2048();
+  void goToFlashcard();
 #ifdef ENABLE_CHINESE_VERSION
   void goToChineseChess();
   void goToWeRead();
