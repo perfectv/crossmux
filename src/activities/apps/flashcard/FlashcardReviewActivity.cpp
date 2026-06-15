@@ -183,9 +183,9 @@ void FlashcardReviewActivity::renderBack(const FlashcardCard& card) {
     renderer.setOrientation(GfxRenderer::Orientation::Portrait);
 
     constexpr int btnWidth = 106;
-    constexpr int btnHeight = 50;  // taller than normal 40px to fit 2 lines
+    constexpr int btnHeight = 65;  // //四个按钮（Again, Easy, Hard, Good）边框高度
     const int portHeight = renderer.getScreenHeight();
-    const int btnY = portHeight - btnHeight;
+    const int btnY = portHeight - btnHeight; 
     const int x4Pos[] = {25, 130, 245, 350};
     const int x3Pos[] = {38, 154, 268, 384};
     const int* btnPos = gpio.deviceIsX3() ? x3Pos : x4Pos;
