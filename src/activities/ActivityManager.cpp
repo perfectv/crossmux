@@ -6,6 +6,7 @@
 
 #include "OpdsServerStore.h"
 #include "apps/2048/Game2048Activity.h"
+#include "apps/flashcard/FlashcardDeckListActivity.h"
 #include "apps/AppsMenuActivity.h"
 #include "apps/avatar/UglyAvatarActivity.h"
 #include "apps/cellular/CellularGameActivity.h"
@@ -263,6 +264,8 @@ void ActivityManager::goToMinesweeper() {
 void ActivityManager::goToCellular() { replaceActivity(std::make_unique<CellularGameActivity>(renderer, mappedInput)); }
 
 void ActivityManager::goToGame2048() { replaceActivity(std::make_unique<Game2048Activity>(renderer, mappedInput)); }
+
+void ActivityManager::goToFlashcard() { replaceActivity(std::make_unique<FlashcardDeckListActivity>(renderer, mappedInput)); }
 
 void ActivityManager::goToStandby() { replaceActivity(std::make_unique<StandbyActivity>(renderer, mappedInput)); }
 
