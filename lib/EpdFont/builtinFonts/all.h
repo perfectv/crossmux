@@ -16,30 +16,13 @@
 //     at these sizes shows blank for any char outside the i18n subset;
 //     UI strings still render because their chars are always included.
 #include <builtinFonts/chinese_chess_16.h>
-#include <builtinFonts/notosans_cjk_8.h>
 #include <builtinFonts/notosans_cjk_10.h>
 #include <builtinFonts/notosans_cjk_12.h>
 #include <builtinFonts/notosans_cjk_14.h>
 #include <builtinFonts/notosans_cjk_16.h>
 #include <builtinFonts/notosans_cjk_18.h>
+#include <builtinFonts/notosans_cjk_8.h>
 #else
-#include <builtinFonts/notoserif_12_bold.h>
-#include <builtinFonts/notoserif_12_bolditalic.h>
-#include <builtinFonts/notoserif_12_italic.h>
-#include <builtinFonts/notoserif_12_regular.h>
-#include <builtinFonts/notoserif_14_bold.h>
-#include <builtinFonts/notoserif_14_bolditalic.h>
-#include <builtinFonts/notoserif_14_italic.h>
-#include <builtinFonts/notoserif_14_regular.h>
-#include <builtinFonts/notoserif_16_bold.h>
-#include <builtinFonts/notoserif_16_bolditalic.h>
-#include <builtinFonts/notoserif_16_italic.h>
-#include <builtinFonts/notoserif_16_regular.h>
-#include <builtinFonts/notoserif_18_bold.h>
-#include <builtinFonts/notoserif_18_bolditalic.h>
-#include <builtinFonts/notoserif_18_italic.h>
-#include <builtinFonts/notoserif_18_regular.h>
-#include <builtinFonts/notosans_8_regular.h>
 #include <builtinFonts/notosans_12_bold.h>
 #include <builtinFonts/notosans_12_bolditalic.h>
 #include <builtinFonts/notosans_12_italic.h>
@@ -56,6 +39,23 @@
 #include <builtinFonts/notosans_18_bolditalic.h>
 #include <builtinFonts/notosans_18_italic.h>
 #include <builtinFonts/notosans_18_regular.h>
+#include <builtinFonts/notosans_8_regular.h>
+#include <builtinFonts/notoserif_12_bold.h>
+#include <builtinFonts/notoserif_12_bolditalic.h>
+#include <builtinFonts/notoserif_12_italic.h>
+#include <builtinFonts/notoserif_12_regular.h>
+#include <builtinFonts/notoserif_14_bold.h>
+#include <builtinFonts/notoserif_14_bolditalic.h>
+#include <builtinFonts/notoserif_14_italic.h>
+#include <builtinFonts/notoserif_14_regular.h>
+#include <builtinFonts/notoserif_16_bold.h>
+#include <builtinFonts/notoserif_16_bolditalic.h>
+#include <builtinFonts/notoserif_16_italic.h>
+#include <builtinFonts/notoserif_16_regular.h>
+#include <builtinFonts/notoserif_18_bold.h>
+#include <builtinFonts/notoserif_18_bolditalic.h>
+#include <builtinFonts/notoserif_18_italic.h>
+#include <builtinFonts/notoserif_18_regular.h>
 #include <builtinFonts/ubuntu_10_bold.h>
 #include <builtinFonts/ubuntu_10_regular.h>
 #include <builtinFonts/ubuntu_12_bold.h>
