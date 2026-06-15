@@ -17,7 +17,6 @@ void FlashcardDoneActivity::loop() {
         finish();
     }
 }
-
 void FlashcardDoneActivity::render(RenderLock&&) {
     const auto& metrics = UITheme::getInstance().getMetrics();
     const int pageWidth = renderer.getScreenWidth();

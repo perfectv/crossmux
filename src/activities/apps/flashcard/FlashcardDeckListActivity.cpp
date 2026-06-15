@@ -131,11 +131,10 @@ void FlashcardDeckListActivity::render(RenderLock&&) {
     }
 
     // 预估底部按钮高度（实际由 GUI.drawButtonHints 决定，这里预留足够空间）
-    const int buttonHintHeight = 30;
-    const int maxY = pageHeight - buttonHintHeight - metrics.verticalSpacing;
-
+    const int buttonHintHeight = 50;
+    const int maxY = pageHeight - buttonHintHeight - metrics.verticalSpacing ; 
     // Deck cards
-    constexpr int cardHeight = 55;  // 从65减小到55
+    constexpr int cardHeight = 100;  // 设置卡的高度
     for (int i = 0; i < deckCount; i++) {
         if (y + cardHeight > maxY) break;  // 如果放不下则停止
 
@@ -153,7 +152,7 @@ void FlashcardDeckListActivity::render(RenderLock&&) {
         renderer.drawText(UI_12_FONT_ID, cardX + 8, y + 5, d.name.c_str(), !inv, EpdFontFamily::BOLD);
 
         // Stats row: "Mới   Đến hạn   Tổng cộng" with values
-        int statsY = y + 28;  // 稍微上移以适应更矮的卡片
+        int statsY = y + 35;  // 稍微上移以适应更矮的卡片
         int colX = cardX + 8;
         int colSpacing = (cardWidth - 16) / 3;
 
@@ -172,11 +171,11 @@ void FlashcardDeckListActivity::render(RenderLock&&) {
         snprintf(val, sizeof(val), "%d", static_cast<int>(d.stats.totalCards));
         renderer.drawText(UI_10_FONT_ID, colX + colSpacing * 2, valY, val, !inv);
 
-        y += cardHeight + metrics.verticalSpacing / 2;  // 减小间距
+        y += cardHeight + metrics.verticalSpacing;  // 增加间距
     }
 
     // Import item
-    constexpr int smallItemHeight = 25;  // 从30减小到25
+    constexpr int smallItemHeight = 45;  // 导入与设置两个选项的高度
     if (y + smallItemHeight <= maxY) {
         int importIdx = deckCount;
         if (selectedIndex == importIdx) {
@@ -184,7 +183,7 @@ void FlashcardDeckListActivity::render(RenderLock&&) {
         }
         renderer.drawText(UI_10_FONT_ID, sidePad + 8, y + 5, tr(STR_FLASHCARD_IMPORT),
                           selectedIndex != importIdx);
-        y += smallItemHeight + 2;
+        y += smallItemHeight + 10;
     }
 
     // Settings item
@@ -193,7 +192,7 @@ void FlashcardDeckListActivity::render(RenderLock&&) {
         if (selectedIndex == settingsIdx) {
             renderer.fillRect(sidePad, y, cardWidth, smallItemHeight, true);
         }
-        renderer.drawText(UI_10_FONT_ID, sidePad + 8, y + 5, tr(STR_FLASHCARD_SETTINGS),
+        renderer.drawText(UI_10_FONT_ID, sidePad + 8, y + 10, tr(STR_FLASHCARD_SETTINGS),
                           selectedIndex != settingsIdx);
         // 最后一项不加间距
     }

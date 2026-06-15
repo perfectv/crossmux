@@ -22,7 +22,7 @@ FlashcardReviewActivity::FlashcardReviewActivity(GfxRenderer& renderer,
 
 void FlashcardReviewActivity::onEnter() {
     Activity::onEnter();
-    loadFlashcardConfig();  // 新增
+    loadFlashcardConfig(); 
     today = FlashcardSrs::getToday();
     deck.loadFromCsv(deckPath.c_str());
     reviewQueue = deck.buildReviewQueue(today,
@@ -31,11 +31,13 @@ void FlashcardReviewActivity::onEnter() {
     currentQueueIndex = 0;
     cardState = CardState::Front;
     saveCounter = 0;
-
     if (reviewQueue.empty()) {
-        activityManager.pushActivity(
-            std::make_unique<FlashcardDoneActivity>(renderer, mappedInput));
-        return;
+    startActivityForResult(
+        std::make_unique<FlashcardDoneActivity>(renderer, mappedInput),
+        [this](const ActivityResult&) {
+            finish();
+        });
+    return;
     }
     maxQueueSize = reviewQueue.size() * 2;
     requestUpdate();
@@ -96,12 +98,14 @@ void FlashcardReviewActivity::rateCard(SrsRating rating) {
         deck.saveToCsv(deckPath.c_str());
         saveCounter = 0;
     }
-
     if (currentQueueIndex >= reviewQueue.size()) {
-        deck.saveToCsv(deckPath.c_str());
-        activityManager.pushActivity(
-            std::make_unique<FlashcardDoneActivity>(renderer, mappedInput));
-    } else {
+    deck.saveToCsv(deckPath.c_str());
+    startActivityForResult(
+        std::make_unique<FlashcardDoneActivity>(renderer, mappedInput),
+        [this](const ActivityResult&) {
+            finish();
+        });
+    }else {
         cardState = CardState::Front;
         requestUpdate();
     }
@@ -183,9 +187,9 @@ void FlashcardReviewActivity::renderBack(const FlashcardCard& card) {
     renderer.setOrientation(GfxRenderer::Orientation::Portrait);
 
     constexpr int btnWidth = 106;
-    constexpr int btnHeight = 50;  // taller than normal 40px to fit 2 lines
+    constexpr int btnHeight = 65;  // //四个按钮（Again, Easy, Hard, Good）边框高度
     const int portHeight = renderer.getScreenHeight();
-    const int btnY = portHeight - btnHeight;
+    const int btnY = portHeight - btnHeight; 
     const int x4Pos[] = {25, 130, 245, 350};
     const int x3Pos[] = {38, 154, 268, 384};
     const int* btnPos = gpio.deviceIsX3() ? x3Pos : x4Pos;
