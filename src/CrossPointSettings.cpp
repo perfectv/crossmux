@@ -94,8 +94,11 @@ uint8_t CrossPointSettings::sleepTimeoutEnumToMinutes(const uint8_t legacyValue)
   switch (legacyValue) {
     case SLEEP_1_MIN:
       return 1;
+<<<<<<< HEAD
     case SLEEP_3_MIN:
       return 3;
+=======
+>>>>>>> upstream/master
     case SLEEP_5_MIN:
       return 5;
     case SLEEP_15_MIN:
@@ -339,6 +342,7 @@ unsigned long CrossPointSettings::getSleepTimeoutMs() const {
   const uint8_t minutes =
       std::clamp(sleepTimeoutMinutes, MIN_SLEEP_TIMEOUT_MINUTES, static_cast<uint8_t>(SLEEP_TIMEOUT_NEVER_MINUTES - 1));
   return static_cast<unsigned long>(minutes) * 60UL * 1000UL;
+<<<<<<< HEAD
 }
 
 uint64_t CrossPointSettings::getDailyGoalMs() const {
@@ -353,6 +357,8 @@ uint64_t CrossPointSettings::getDailyGoalMs() const {
     case DAILY_GOAL_60_MIN:
       return 60ULL * 60ULL * 1000ULL;
   }
+=======
+>>>>>>> upstream/master
 }
 
 int CrossPointSettings::getRefreshFrequency() const {

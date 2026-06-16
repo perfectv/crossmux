@@ -1472,12 +1472,17 @@ int GfxRenderer::getTextAdvanceX(const int fontId, const char* text, EpdFontFami
   // where kern/lig data was not loaded.
   auto sdIt = sdCardFonts_.find(fontId);
   if (sdIt != sdCardFonts_.end() && sdIt->second->hasAdvanceTable()) {
+<<<<<<< HEAD
+=======
+    int32_t widthFP = 0;
+>>>>>>> upstream/master
     const bool isSupSub = (style & (EpdFontFamily::SUP | EpdFontFamily::SUB)) != 0;
     const uint8_t styleIdx = resolveSdCardStyle(*sdIt->second, style);
     int widthPx = 0;
     int32_t prevAdvanceFP = 0;  // 12.4 fixed-point: previous glyph's advance
     bool havePrev = false;
     while (uint32_t cp = utf8NextCodepoint(reinterpret_cast<const uint8_t**>(&text))) {
+<<<<<<< HEAD
       // Differential rounding: snap each glyph step to a pixel individually, matching
       // drawText so layout (wordXpos) and render geometry agree exactly. Snapping the
       // whole sum once (as before) under-counted the rendered width whenever per-glyph
@@ -1499,6 +1504,10 @@ int GfxRenderer::getTextAdvanceX(const int fontId, const char* text, EpdFontFami
       // to keep measurement consistent with drawText and the builtin-font path below.
       if (isSupSub) prevAdvanceFP = (prevAdvanceFP + 1) / 2;
       havePrev = true;
+=======
+      int32_t advFP = sdIt->second->getAdvance(cp, styleIdx);
+      widthFP += isSupSub ? (advFP + 1) / 2 : advFP;
+>>>>>>> upstream/master
     }
     if (havePrev) widthPx += fp4::toPixel(prevAdvanceFP);  // final glyph's advance
     return widthPx;
