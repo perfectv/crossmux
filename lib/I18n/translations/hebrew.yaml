@@ -1,6 +1,10 @@
 _language_name: "עברית"
 _language_code: "HE"
+<<<<<<< HEAD
 _order: "26"
+=======
+_order: "23"
+>>>>>>> upstream/master
 
 STR_CROSSPOINT: "CrossMux"
 STR_BOOTING: "מפעיל..."
