@@ -6,7 +6,7 @@ _order: "26"
 _order: "23"
 >>>>>>> upstream/master
 
-STR_CROSSPOINT: "CrossPoint"
+STR_CROSSPOINT: "CrossMux"
 STR_BOOTING: "מפעיל..."
 STR_SLEEPING: "מצב שינה"
 STR_ENTERING_SLEEP: "עובר למצב שינה"
