@@ -4,9 +4,9 @@
 
 // SRS state stored per card. Compact representation using days-since-2000 epoch.
 struct SrsState {
-    uint16_t interval = 0;  // days until next review (0 = new card)
-    uint16_t ease = 250;    // ease factor * 100 (250 = 2.5, range [130, 400])
-    uint32_t dueDate = 0;   // days since 2000-01-01 (0 = new/unscheduled)
+  uint16_t interval = 0;  // days until next review (0 = new card)
+  uint16_t ease = 250;    // ease factor * 100 (250 = 2.5, range [130, 400])
+  uint32_t dueDate = 0;   // days since 2000-01-01 (0 = new/unscheduled)
 };
 
 enum class SrsRating : uint8_t { Again = 0, Hard = 1, Good = 2, Easy = 3 };
