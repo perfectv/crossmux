@@ -17,14 +17,11 @@
 #include "components/icons/book.h"
 #include "components/icons/book24.h"
 #include "components/icons/bookmark.h"
-<<<<<<< HEAD
 #include "components/icons/cellular.h"
 #ifdef ENABLE_CHINESE_VERSION
 #include "components/icons/chinese_chess.h"
 #include "components/icons/weread.h"
 #endif
-=======
->>>>>>> upstream/master
 #include "components/icons/cover.h"
 #include "components/icons/file24.h"
 #include "components/icons/folder.h"
@@ -91,7 +88,6 @@ const uint8_t* iconForName(UIIcon icon, int size) {
         return HotspotIcon;
       case UIIcon::Bookmark:
         return BookmarkIcon;
-<<<<<<< HEAD
       case UIIcon::Apps:
         return AppsIcon;
       case UIIcon::Sudoku:
@@ -114,8 +110,6 @@ const uint8_t* iconForName(UIIcon icon, int size) {
         return StandbyIcon;
       case UIIcon::Game2048:
         return Game2048Icon;
-=======
->>>>>>> upstream/master
       default:
         return nullptr;
     }
