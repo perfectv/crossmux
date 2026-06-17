@@ -355,25 +355,10 @@ void ParsedText::addWord(std::string word, const EpdFontFamily::Style fontStyle,
   }
 }
 
-<<<<<<< HEAD
 int ParsedText::resolveFirstLineIndent(const bool isFirstLine) const {
   if (isFirstLine && blockStyle.textIndentDefined && (blockStyle.textIndent < 0 || !extraParagraphSpacing) &&
       isNaturalAlign) {
     return blockStyle.textIndent;
-=======
-int ParsedText::resolveFirstLineIndent(const bool isFirstLine, const GfxRenderer& renderer, const int fontId) const {
-  if (!isFirstLine || !isNaturalAlign) {
-    return 0;
-  }
-  if (blockStyle.textIndentDefined) {
-    if (blockStyle.textIndent < 0 || !extraParagraphSpacing) {
-      return blockStyle.textIndent;
-    }
-    return 0;
-  }
-  if (!extraParagraphSpacing) {
-    return renderer.getSpaceWidth(fontId, EpdFontFamily::REGULAR) * 3;
->>>>>>> upstream/master
   }
   return 0;
 }
@@ -401,12 +386,9 @@ void ParsedText::layoutAndExtractLines(const GfxRenderer& renderer, const int fo
   isNaturalAlign =
       blockStyle.alignment == CssTextAlign::Justify ||
       (blockStyle.isRtl ? blockStyle.alignment == CssTextAlign::Right : blockStyle.alignment == CssTextAlign::Left);
-<<<<<<< HEAD
 
   // Apply fixed transforms before any per-line layout work.
   applyParagraphIndent();
-=======
->>>>>>> upstream/master
 
   // Ensure SD card font glyph metrics are loaded before measuring word widths.
   // For flash-based fonts isSdCardFont() returns false and this block is skipped
@@ -526,11 +508,7 @@ std::vector<size_t> ParsedText::computeLineBreaks(const GfxRenderer& renderer, c
     return {};
   }
 
-<<<<<<< HEAD
   const int firstLineIndent = resolveFirstLineIndent(true);
-=======
-  const int firstLineIndent = resolveFirstLineIndent(true, renderer, fontId);
->>>>>>> upstream/master
 
   // Ensure any word that would overflow even as the first entry on a line is split using fallback hyphenation.
   for (size_t i = 0; i < wordWidths.size(); ++i) {
@@ -660,7 +638,6 @@ std::vector<size_t> ParsedText::computeLineBreaks(const GfxRenderer& renderer, c
   return lineBreakIndices;
 }
 
-<<<<<<< HEAD
 void ParsedText::applyParagraphIndent() {
   if (extraParagraphSpacing || words.empty()) {
     return;
@@ -683,17 +660,11 @@ void ParsedText::applyParagraphIndent() {
   }
 }
 
-=======
->>>>>>> upstream/master
 // Builds break indices while opportunistically splitting the word that would overflow the current line.
 std::vector<size_t> ParsedText::computeHyphenatedLineBreaks(const GfxRenderer& renderer, const int fontId,
                                                             const int pageWidth, std::vector<uint16_t>& wordWidths,
                                                             std::vector<bool>& continuesVec) {
-<<<<<<< HEAD
   const int firstLineIndent = resolveFirstLineIndent(true);
-=======
-  const int firstLineIndent = resolveFirstLineIndent(true, renderer, fontId);
->>>>>>> upstream/master
 
   std::vector<size_t> lineBreakIndices;
   size_t currentIndex = 0;
@@ -868,11 +839,7 @@ void ParsedText::extractLine(const size_t breakIndex, const int pageWidth, const
   const size_t lastBreakAt = breakIndex > 0 ? lineBreakIndices[breakIndex - 1] : 0;
   const size_t lineWordCount = lineBreak - lastBreakAt;
 
-<<<<<<< HEAD
   const int firstLineIndent = resolveFirstLineIndent(breakIndex == 0);
-=======
-  const int firstLineIndent = resolveFirstLineIndent(breakIndex == 0, renderer, fontId);
->>>>>>> upstream/master
 
   // Build line data by moving from the original vectors using index range
   std::vector<std::string> lineWords;
@@ -1028,11 +995,7 @@ void ParsedText::extractLine(const size_t breakIndex, const int pageWidth, const
     }
 
     for (size_t wordIdx = 0; wordIdx < reorderedWidthsScratch.size(); wordIdx++) {
-<<<<<<< HEAD
       lineXPos.push_back(static_cast<int16_t>(xpos < 0 ? 0 : xpos));
-=======
-      lineXPos.push_back(static_cast<int16_t>(xpos));
->>>>>>> upstream/master
       xpos += reorderedWidthsScratch[wordIdx];
 
       const bool nextIsContinuation =
@@ -1063,11 +1026,7 @@ void ParsedText::extractLine(const size_t breakIndex, const int pageWidth, const
     // Standard LTR/RTL positioning loop when no visual reordering is needed
     if (blockStyle.isRtl) {
       // RTL: position words from right to left
-<<<<<<< HEAD
       auto xpos = static_cast<int>(effectivePageWidth);
-=======
-      int xpos = effectivePageWidth;
->>>>>>> upstream/master
       if (effectiveAlignment == CssTextAlign::Left) {
         // Explicit left alignment in RTL context
         xpos = lineWordWidthSum + totalNaturalGaps;
@@ -1078,11 +1037,7 @@ void ParsedText::extractLine(const size_t breakIndex, const int pageWidth, const
 
       for (size_t wordIdx = 0; wordIdx < lineWordCount; wordIdx++) {
         xpos -= wordWidths[lastBreakAt + wordIdx];
-<<<<<<< HEAD
         lineXPos.push_back(static_cast<int16_t>(xpos < 0 ? 0 : xpos));
-=======
-        lineXPos.push_back(static_cast<int16_t>(xpos));
->>>>>>> upstream/master
 
         const bool nextIsContinuation = wordIdx + 1 < lineWordCount && continuesVec[lastBreakAt + wordIdx + 1];
         if (nextIsContinuation) {
@@ -1108,11 +1063,7 @@ void ParsedText::extractLine(const size_t breakIndex, const int pageWidth, const
       }
     } else {
       // LTR: position words from left to right
-<<<<<<< HEAD
       auto xpos = static_cast<int16_t>(firstLineIndent);
-=======
-      int xpos = firstLineIndent;
->>>>>>> upstream/master
       if (effectiveAlignment == CssTextAlign::Right) {
         xpos = effectivePageWidth - lineWordWidthSum - totalNaturalGaps;
       } else if (effectiveAlignment == CssTextAlign::Center) {
@@ -1120,11 +1071,7 @@ void ParsedText::extractLine(const size_t breakIndex, const int pageWidth, const
       }
 
       for (size_t wordIdx = 0; wordIdx < lineWordCount; wordIdx++) {
-<<<<<<< HEAD
         lineXPos.push_back(static_cast<int16_t>(xpos < 0 ? 0 : xpos));
-=======
-        lineXPos.push_back(static_cast<int16_t>(xpos));
->>>>>>> upstream/master
 
         const bool nextIsContinuation = wordIdx + 1 < lineWordCount && continuesVec[lastBreakAt + wordIdx + 1];
         if (nextIsContinuation) {

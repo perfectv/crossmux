@@ -405,7 +405,6 @@ curl -X POST \
   http://crosspoint.local/api/wifi/delete
 ```
 
-<<<<<<< HEAD
 ## WeRead API (Chinese build only)
 
 These endpoints are available **only in the `gh_release_cn` build** (the same
@@ -467,8 +466,6 @@ Error responses:
 Error strings are intentionally Chinese to match the locale of the only build
 that exposes this endpoint.
 
-=======
->>>>>>> upstream/master
 ## WebSocket Upload
 
 ### Port 81

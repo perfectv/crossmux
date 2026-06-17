@@ -97,7 +97,6 @@ struct ThemeMetrics {
   int textFieldLineEndOffset;
 };
 
-<<<<<<< HEAD
 enum UIIcon {
   None = 0,
   Folder,
@@ -125,9 +124,6 @@ enum UIIcon {
   Standby,
   Game2048,
 };
-=======
-enum UIIcon { None = 0, Folder, Text, Image, Book, File, Recent, Settings, Transfer, Library, Wifi, Hotspot, Bookmark };
->>>>>>> upstream/master
 
 enum class KeyboardKeyType { Normal, Shift, Mode, Space, Del, Ok, Disabled };
 

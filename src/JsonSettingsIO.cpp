@@ -8,10 +8,7 @@
 #include <cstring>
 #include <string>
 
-<<<<<<< HEAD
 #include "AchievementsStore.h"
-=======
->>>>>>> upstream/master
 #include "BookmarkEntry.h"
 #include "CrossPointSettings.h"
 #include "CrossPointState.h"
@@ -510,7 +507,6 @@ bool JsonSettingsIO::loadBookmarks(std::vector<BookmarkEntry>& bookmarks, const 
   LOG_DBG("BKM", "Loaded %zu bookmarks from file", bookmarks.size());
   return true;
 }
-<<<<<<< HEAD
 
 // ---- ReadingStatsStore ----
 // reading_stats.json, format version 6. Written atomically (temp + rename) and
@@ -806,5 +802,3 @@ bool JsonSettingsIO::loadAchievementsFromFile(AchievementsStore& store, const ch
   }
   return loadAchievements(store, json.c_str());
 }
-=======
->>>>>>> upstream/master

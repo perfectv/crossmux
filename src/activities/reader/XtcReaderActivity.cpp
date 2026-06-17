@@ -393,7 +393,6 @@ void XtcReaderActivity::renderPage() {
 }
 
 void XtcReaderActivity::saveProgress() const {
-<<<<<<< HEAD
   const uint32_t totalPages = xtc->getPageCount();
   int progressPercent = totalPages > 0 ? static_cast<int>((currentPage + 1) * 100 / totalPages) : 0;
   if (progressPercent > 100) {
@@ -402,8 +401,6 @@ void XtcReaderActivity::saveProgress() const {
   READING_STATS.updateProgress(static_cast<uint8_t>(progressPercent), totalPages > 0 && currentPage + 1 >= totalPages,
                                "", static_cast<uint8_t>(progressPercent));
 
-=======
->>>>>>> upstream/master
   HalFile f;
   if (Storage.openFileForWrite("XTR", xtc->getCachePath() + "/progress.bin", f)) {
     uint8_t data[4];

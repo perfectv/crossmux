@@ -432,7 +432,6 @@ void TxtReaderActivity::renderStatusBar() const {
 }
 
 void TxtReaderActivity::saveProgress() const {
-<<<<<<< HEAD
   int progressPercent = totalPages > 0 ? (currentPage + 1) * 100 / totalPages : 0;
   if (progressPercent > 100) {
     progressPercent = 100;
@@ -440,8 +439,6 @@ void TxtReaderActivity::saveProgress() const {
   READING_STATS.updateProgress(static_cast<uint8_t>(progressPercent), totalPages > 0 && currentPage + 1 >= totalPages,
                                "", static_cast<uint8_t>(progressPercent));
 
-=======
->>>>>>> upstream/master
   HalFile f;
   if (Storage.openFileForWrite("TRS", txt->getCachePath() + "/progress.bin", f)) {
     uint8_t data[4];
